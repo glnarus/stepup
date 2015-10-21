@@ -1,9 +1,10 @@
 --remove foreign links so we can drop the tables 
-Alter Table GNARUS.PROFILES DROP userid;
-Alter Table GNARUS.Followers DROP userid;
+Alter Table GNARUS.Profiles DROP userid;
+Alter Table GNARUS.Followers DROP beingfollowedid;
+Alter Table GNARUS.Followers DROP followerid;
 Alter Table GNARUS.Achievements DROP userid;
 Alter Table GNARUS.Posts DROP authorid;
-Alter Table GNARUS.USERS DROP profileId;
+Alter Table GNARUS.Users DROP profileId;
 
 DROP TABLE Posts;
 DROP TABLE Profiles;
@@ -27,12 +28,12 @@ CREATE TABLE Profiles (
     email VARCHAR(100),
     phone CHAR(10),
     userid INT NOT NULL,
-    goal LONG VARCHAR,
-    reward VARCHAR(80),
+    goal VARCHAR(200),
+    reward VARCHAR(200),
     picture BLOB(200K),
     pictype VARCHAR(30),
-    emailsubscribe BIT,
-    textsubscribe BIT,
+    emailsubscribe BOOLEAN,
+    textsubscribe BOOLEAN,
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
@@ -47,23 +48,24 @@ References GNARUS.Profiles (id);
 
 --many followers can track many leaders
 CREATE TABLE Followers (
-    ID INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    leaderid INT,
-    followerid INT    
+    beingfollowedid INT NOT NULL,
+    followerid INT NOT NULL,    
+    ID INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 --setup foreign key relationship for followerid and leaderid
+Alter Table GNARUS.Followers
+Add FOREIGN KEY (beingfollowedid)
+References GNARUS.USERS (id); 
 Alter Table GNARUS.FOLLOWERS
-Add FOREIGN KEY (leaderid)
-References GNARUS.Users(userid)
 Add Foreign Key (followerid)
-References GNARUS.User(userid);
+References GNARUS.USERS (id); 
 
 --one user to many achievements
 CREATE TABLE Achievements (
     exercise VARCHAR(140) NOT NULL,
     duration INT NOT NULL,
-    notes VARCHAR (280),
+    notes VARCHAR (200),
     userid INT NOT NULL,
     dateoccurred DATE DEFAULT CURRENT_DATE,
     daterecorded DATE DEFAULT CURRENT_DATE,
@@ -72,7 +74,7 @@ CREATE TABLE Achievements (
 
 Alter Table GNARUS.Achievements
 Add FOREIGN KEY (userid)
-References GNARUS.Users(userid);
+References GNARUS.Users(id);
 
 
 CREATE TABLE Posts (
@@ -90,17 +92,25 @@ References GNARUS.USERS (id);
 
 INSERT INTO Users (username, password) VALUES
     ('johndoe', 'password'),
-    ('jilljack', 'password');
+    ('jilljack', 'password'),
+    ('monkeyman', 'banana');
 
-INSERT INTO Profiles (joindate, firstname, lastname, email, zip, userid) VALUES
-    ('2013-05-09', 'John', 'Doe', 'jd@example.com', '98008',1),
-    ('2013-10-31', 'Jill', 'Jack', 'jj@nowhere.com', '24201',2);
+INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
+    ('2012-06-09', 'John', 'Doe', 'jd@example.com',1),
+    ('2013-10-31', 'Jill', 'Jack', 'jj@nowhere.com',2),
+    ('2013-01-15', 'Curious', 'George', 'monkey@tree.net',3);
 
 UPDATE USERS SET profileId=1 WHERE id=1;
 UPDATE USERS SET profileId=2 WHERE id=2;
+UPDATE USERS SET profileId=3 WHERE id=3;
+
+INSERT INTO Achievements (exercise, duration, notes, userid, dateoccurred) VALUES
+    ('Running', 45, 'Really hard today, very warm',1,'2012-07-04'),
+    ('Walking', 120, 'Looking for a banana',2,'2013-09-04'),
+    ('Yoga', 20, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
 
 INSERT INTO Posts (content, authorid, postdate) VALUES
-    ('I''m a white-hat hacking my wonky Twonky server.', 1, '2013-05-09'),
-    ('My wonky Twonky server conked out.', 1, '2014-06-23'),
-    ('I see good reason not to configure Twonky.', 2, '2013-11-01');
+    ('I''m super tired of exercising!', 1, '2012-06-09'),
+    ('Suck it up biotch!', 3, '2013-01-16'),
+    ('Anybody lonely tonight?', 2, '2013-10-31');
 
