@@ -16,21 +16,72 @@ public class FrontController extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet FrontController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet FrontController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        String action = request.getParameter("action");
+        String nextPage = null;
+        if (action == null) {
+            if (request.getAttribute("user") == null)
+                action = "login";
+            else
+                action = "home";
         }
+        switch (action) {
+            case "login" :
+                nextPage = login (request);
+                break;
+                
+            case "home":
+                nextPage = "home";
+                break;
+                    
+            default:                                
+                if (request.getAttribute("user") != null)
+                    nextPage = "home";
+                else
+                    nextPage = "login";                            
+        }
+        request.getRequestDispatcher(nextPage + ".jsp").forward(request, 
+                                                                response);            
     }
 
+    private String login(HttpServletRequest request) {
+        //for GET requests, just return and allow JSP to display page
+        if (request.getMethod().equals("GET")) return "login";
+        //for POST requests, let's try and login now
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        LoginBean bean = new LoginBean(username, password);
+        if (bean.validate()) {
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            User user = db.authenticate(username, password);
+            if (user == null) {
+                String error = db.getLastError();
+                request.setAttribute("flash", 
+                        (error == null? "No user/password combination found" :
+                                                                      error));
+                return "login";
+            } else {
+                request.getSession().setAttribute("user", user);
+                return home(request);
+            }
+        } else {
+            request.setAttribute("flash", 
+                                 "Please follow username and password rules");
+            return "login";
+        }
+    }    
+    
+    private String home (HttpServletRequest request) {
+        //the only requests supported are GET requests at this time,
+        //treat all other requests as GET for now..
+        if (request.getSession().getAttribute("user") == null) return "login";
+        
+
+        //TODO - pull all the HOME info for the user and return it here
+        
+        return "home";
+        
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

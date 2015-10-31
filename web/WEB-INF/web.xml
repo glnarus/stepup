@@ -1,16 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <context-param>
+        <description>protocol for database</description>
+        <param-name>dbProtocol</param-name>
+        <param-value>jdbc:derby</param-value>
+    </context-param>
+    <context-param>
+        <description>host name for database</description>
+        <param-name>dbHost</param-name>
+        <param-value>localhost</param-value>
+    </context-param>
+    <context-param>
+        <description>port number where database is active</description>
+        <param-name>dbPort</param-name>
+        <param-value>1527</param-value>
+    </context-param>
+    <context-param>
+        <description>username to log into the database</description>
+        <param-name>dbUsername</param-name>
+        <param-value>gnarus</param-value>
+    </context-param>
+    <context-param>
+        <description>password for the database</description>
+        <param-name>dbPassword</param-name>
+        <param-value>dilbert</param-value>
+    </context-param>
+    <context-param>
+        <description>name of the database</description>
+        <param-name>dbName</param-name>
+        <param-value>stepup</param-value>
+    </context-param>
+    <listener>
+        <description>ServletContextListener</description>
+        <listener-class>com.myurlname.stepup.ContextListener</listener-class>
+    </listener>
     <servlet>
         <servlet-name>FrontController</servlet-name>
         <servlet-class>com.myurlname.stepup.FrontController</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>FrontController</servlet-name>
-        <url-pattern>/FrontController</url-pattern>
+        <url-pattern>/stepup</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
             30
         </session-timeout>
     </session-config>
+    <welcome-file-list>
+        <welcome-file>stepup</welcome-file>
+    </welcome-file-list>
 </web-app>
