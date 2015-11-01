@@ -26,5 +26,6 @@
                                            value="Log in!"/></td></tr>
             </table>
         </form>
+        <p><a href="stepup?action=register">Register new user</a></p>
     </body>
 </html>

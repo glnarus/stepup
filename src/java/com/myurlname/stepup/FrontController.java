@@ -29,9 +29,15 @@ public class FrontController extends HttpServlet {
                 nextPage = login (request);
                 break;
                 
+            case "register":
+                nextPage = register (request);
+                break;
+                
             case "home":
                 nextPage = "home";
                 break;
+                
+             
                     
             default:                                
                 if (request.getAttribute("user") != null)
@@ -69,6 +75,54 @@ public class FrontController extends HttpServlet {
             return "login";
         }
     }    
+    
+    private String register (HttpServletRequest request) {
+        //for GET requests, just return and allow JSP to display
+        //the register page
+        if (request.getMethod().equals("GET")) return "register";
+        //for POST requests, we need to validate the data, and if valid,
+        //insert it.
+        String username = request.getParameter("user");
+        String password1 = request.getParameter("pass1");
+        String password2 = request.getParameter("pass2");
+        String firstName = request.getParameter("fname");
+        String lastName = request.getParameter("lname");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        String goal = request.getParameter("goal");
+        String reward = request.getParameter("reward");
+        String emailSubsribe = request.getParameter("emailsubscribe");
+        String textSubscribe = request.getParameter("textsubscribe");
+        RegistrationBean r = new RegistrationBean (username, 
+                                                   password1, 
+                                                   password2,
+                                                   firstName,
+                                                   lastName,
+                                                   email,
+                                                   phone,
+                                                   goal,
+                                                   reward,
+                                                   emailSubsribe,
+                                                   textSubscribe);
+        Profile profile = new Profile (r);
+        if (!profile.validateRegistration()) {
+            request.setAttribute("flash", "Required information not entered correctly" + profile.getErrorMessage());
+            request.setAttribute("bean", r);
+            request.setAttribute("problems", profile.getErrorMessage());
+            return "register";
+        }
+        //Data is valid, let's update/create the profile!
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        User user = db.register(profile);
+        if (user == null) {
+            request.setAttribute("flash",db.getLastError());
+            request.setAttribute("bean", r);
+            return "register";
+        }
+        //Everything registered fine, let's log in the user officially
+        request.getSession().setAttribute("user", user);
+        return "home";                
+    }
     
     private String home (HttpServletRequest request) {
         //the only requests supported are GET requests at this time,

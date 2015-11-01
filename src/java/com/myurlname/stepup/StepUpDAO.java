@@ -2,6 +2,7 @@ package com.myurlname.stepup;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -39,7 +40,7 @@ public class StepUpDAO {
      * injection).
      * @param username
      * @param password
-     * @return User object
+     * @return User object with username and userId set
      */
     public User authenticate (String username, String password) {
         User user = null;
@@ -51,8 +52,7 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"));
-                user.setUserId(rs.getInt("id"));
+                user = new User(rs.getString("username"), rs.getInt("id"));
             }
             lastError = null;
         } catch (SQLException sqle) {
@@ -69,6 +69,73 @@ public class StepUpDAO {
         }
         return user;                      
     }
+    
+        /**Call this method to register a new user, it builds the Profile and
+         * User table entries for a user, and if successful, returns a valid User
+         * object complete with username and userId already set.  If anything
+         * goes wrong, it will return null and you can read about the failure
+         * with the getLastError() method.
+         * @param Profile object
+         * @return User object
+         */
+        public User register(Profile p) {
+        String userSql = "INSERT INTO USERS (username,password) VALUES (?,?)";
+        String profSql = "INSERT INTO PROFILES (firstname,lastname,";
+        profSql += "email,phone,userid,goal,reward) VALUES (?,?,?,?,?,?,?)";
+        String updateSql = "UPDATE Users SET profileid = ? WHERE id = ?";
+        PreparedStatement pstatUser = null, pstatProf = null, pstatUpdate = null;
+        ResultSet userRs = null, profRs = null;
+        int userId = 0, profileId = 0;
+        User user = null;
+        if (!p.validateRegistration()) return null; //controller should already 
+                                                //do this, but check anyway
+        try {
+            pstatUser = CONN.prepareStatement(userSql, 
+                                              Statement.RETURN_GENERATED_KEYS);
+            pstatUser.setString(1, p.getUsername());
+            pstatUser.setString(2, p.getPassword1());
+            pstatUser.executeUpdate();
+            userRs = pstatUser.getGeneratedKeys();
+            if (userRs.next())
+                userId = userRs.getInt(1);
+            pstatProf = CONN.prepareStatement(profSql, 
+                                              Statement.RETURN_GENERATED_KEYS);
+            
+            pstatProf.setString(1, p.getFirstName());
+            pstatProf.setString(2, p.getLastName());
+            pstatProf.setString(3, p.getEmail());
+            pstatProf.setString(4, p.getPhone());
+            pstatProf.setInt(5, userId);
+            pstatProf.setString(6, p.getGoal());
+            pstatProf.setString(7, p.getReward());           
+            pstatProf.executeUpdate();
+            
+            profRs = pstatProf.getGeneratedKeys();
+            if (profRs.next())
+                profileId = profRs.getInt(1);
+            pstatUpdate = CONN.prepareStatement(updateSql);
+            pstatUpdate.setInt(1, profileId);
+            pstatUpdate.setInt(2, userId);
+            pstatUpdate.executeUpdate();  
+            lastError = null;
+            user = new User(p.getUsername(), userId);
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (userRs != null)
+                try { userRs.close(); } catch (SQLException sqle) {}
+            if (profRs != null)
+                try { profRs.close(); } catch (SQLException sqle){}
+            if (pstatUser != null)
+                try { pstatUser.close(); } catch (SQLException sqle) {}
+            if (pstatProf != null)
+                try { pstatProf.close(); } catch (SQLException sqle) {}
+            if (pstatUpdate != null)
+                try { pstatUpdate.close(); } catch (SQLException sqle) {}
+        }
+        return user;
+    }
+    
     
     public void close ()
     {
