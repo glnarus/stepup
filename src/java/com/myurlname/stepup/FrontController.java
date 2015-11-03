@@ -7,6 +7,7 @@ package com.myurlname.stepup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -125,9 +126,25 @@ public class FrontController extends HttpServlet {
     }
     
     private String home (HttpServletRequest request) {
-        //the only requests supported are GET requests at this time,
-        //treat all other requests as GET for now..
+        if (request.getMethod().equals("GET")) return "home";
         if (request.getSession().getAttribute("user") == null) return "login";
+        String activity = request.getParameter("activity");
+        String intensity = request.getParameter("intensity");
+        String minutes = request.getParameter("minutes");
+        String notes = request.getParameter("notes");
+        String dateActivity = request.getParameter("dateactivity");
+        AchievementBean bean = new AchievementBean (activity, intensity,
+                                                   minutes, notes, dateActivity);
+        Achievement achievement = new Achievement (bean);
+        if (!achievement.validate()) {
+            request.setAttribute("flash", "Improper input for activity, try again");
+            request.setAttribute("bean", bean);
+            return "home";
+        }
+        
+        //Everything is valid about this achievement, let's write it to the DB!
+        TODO - add to the DB
+        
         
 
         //TODO - pull all the HOME info for the user and return it here

@@ -110,13 +110,21 @@ public class Profile implements Serializable {
         }
         
         if ((goal != null) && (goal.length()>0)) {
-            goal = StringEscapeUtils.escapeHtml4(goal);
-            goal = goal.replace("'", "&#39;");
+            if (goal.length()>200) 
+                setErrorMessage(getErrorMessage()+ "goal");           
+            else {
+                goal = StringEscapeUtils.escapeHtml4(goal);
+                goal = goal.replace("'", "&#39;");
+            }
         }
         
         if ((reward != null) && (reward.length()>0)) {
-            reward = StringEscapeUtils.escapeHtml4(reward);
-            reward = reward.replace("'", "&#39;");
+            if (reward.length() > 200)
+                setErrorMessage(getErrorMessage()+ "reward");           
+            else {
+                reward = StringEscapeUtils.escapeHtml4(reward);
+                reward = reward.replace("'", "&#39;");
+            }
         }       
         
         if (getErrorMessage() == null)                   
