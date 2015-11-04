@@ -136,7 +136,50 @@ public class StepUpDAO {
         return user;
     }
     
-    
+    /** Writes a pre-validated Achievement to the database and returns
+     * an ID for that achievement.  If anything goes wrong, the ID will
+     * be negative and you can find error information using getLastError()
+     * @param user object that this achievement belongs to
+     * @param achievement object for the achievement
+     * @return achievementID (or -1 if error)
+     */
+    public int addAchievement (Achievement achievement) {        
+        String sql = "INSERT INTO ACHIEVEMENTS (exercise,duration,";
+        sql += "notes,userid,dateoccurred) VALUES (?,?,?,?,?)";       
+        PreparedStatement pstat = null;
+        ResultSet rs = null;
+        int achievementId = -1;
+        
+        if (!achievement.validate()) {
+            lastError = "Invalid achievement";
+            return -1; //controller should already do this, but check anyway
+        }                                                 
+        try {
+            pstat = CONN.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            pstat.setString(1, achievement.getActivity().toString());
+            pstat.setInt(2, achievement.getMinutes());
+            pstat.setString(3, achievement.getNotes());
+            pstat.setInt(4, achievement.getUser().getUserId());
+            pstat.setDate(5, new java.sql.Date (achievement.getActivityDate().getTime()));
+            pstat.executeUpdate();
+            rs = pstat.getGeneratedKeys();
+            if (rs.next()) {
+                achievementId = rs.getInt(1);
+                lastError = null;
+            }
+            else
+                lastError = "Unable to save achievement";                        
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rs != null)
+                try { rs.close(); } catch (SQLException sqle) {}            
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}            
+        }
+        return achievementId;        
+    }
+        
     public void close ()
     {
         try {

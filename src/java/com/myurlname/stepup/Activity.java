@@ -90,7 +90,7 @@ public class Activity {
             case ACT_BALLSPORTS:
                 return "Ball Sports";    
             case ACT_BIKING:
-                return "Bicyling";      
+                return "Bicycling";      
             case ACT_BOXING:
                 return "Boxing";
             case ACT_CALISTHENICS:

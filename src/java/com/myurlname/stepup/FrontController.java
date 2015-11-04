@@ -35,7 +35,7 @@ public class FrontController extends HttpServlet {
                 break;
                 
             case "home":
-                nextPage = "home";
+                nextPage = home(request);
                 break;
                 
              
@@ -68,7 +68,7 @@ public class FrontController extends HttpServlet {
                 return "login";
             } else {
                 request.getSession().setAttribute("user", user);
-                return home(request);
+                return "home";
             }
         } else {
             request.setAttribute("flash", 
@@ -127,7 +127,8 @@ public class FrontController extends HttpServlet {
     
     private String home (HttpServletRequest request) {
         if (request.getMethod().equals("GET")) return "home";
-        if (request.getSession().getAttribute("user") == null) return "login";
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null) return "login";
         String activity = request.getParameter("activity");
         String intensity = request.getParameter("intensity");
         String minutes = request.getParameter("minutes");
@@ -141,15 +142,20 @@ public class FrontController extends HttpServlet {
             request.setAttribute("bean", bean);
             return "home";
         }
+        achievement.setUser(user);
         
         //Everything is valid about this achievement, let's write it to the DB!
-        TODO - add to the DB
-        
-        
-
-        //TODO - pull all the HOME info for the user and return it here
-        
-        return "home";
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        int achievementId = db.addAchievement (achievement);
+        if (achievementId > -1) {
+            achievement.setAchievementId(achievementId);
+            return "home";
+        }
+        else {
+            request.setAttribute ("flash",db.getLastError());
+            request.setAttribute("bean", bean);
+            return "home";
+        }       
         
     }
     

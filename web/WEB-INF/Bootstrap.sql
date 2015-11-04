@@ -67,7 +67,7 @@ CREATE TABLE Achievements (
     duration INT NOT NULL,
     notes VARCHAR (200),
     userid INT NOT NULL,
-    dateoccurred DATE DEFAULT CURRENT_DATE,
+    dateoccurred DATE NOT NULL,
     daterecorded DATE DEFAULT CURRENT_DATE,
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );

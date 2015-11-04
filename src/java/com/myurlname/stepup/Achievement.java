@@ -18,6 +18,8 @@ public class Achievement implements Serializable {
     private String notes;
     private Date activityDate;
     private Date recordedDate;
+    private User user;
+    private int achievementId;
     
     public Achievement (Activity activity, int minutes, Intensity intensity,
                         String notes, Date activityDate, Date recordedDate) {
@@ -42,9 +44,11 @@ public class Achievement implements Serializable {
                 notes = StringEscapeUtils.escapeHtml4(bean.getNotes());
                 notes = notes.replace("'", "&#39;");    
             }            
-            activityDate = new Date(bean.getDateActivity());
-            SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-YYYY");
-            recordedDate = formatter.parse(bean.getDateActivity());
+                        
+            SimpleDateFormat sdf = new SimpleDateFormat("M/dd/yyyy");
+            
+            activityDate = sdf.parse(bean.getDateActivity());                         
+            recordedDate = new Date();  //not really used, it's set by dbase
         }
         catch (Exception e) {
             //something went wrong with the inputs, so let's null out stuff
@@ -136,5 +140,21 @@ public class Achievement implements Serializable {
 
     public void setRecordedDate(Date recordedDate) {
         this.recordedDate = recordedDate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public int getAchievementId() {
+        return achievementId;
+    }
+
+    public void setAchievementId(int achievementId) {
+        this.achievementId = achievementId;
     }
 }
