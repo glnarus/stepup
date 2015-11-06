@@ -8,6 +8,8 @@ package com.myurlname.stepup;
  */
 public class Activity {
     private int activityNumber;
+    private int muscleFactor; //ranges from 1 to 10 in terms of muscle
+                              //recruitment
         
     public final int ACT_BALLSPORTS = 0;
     public final int ACT_BIKING = 100;
@@ -82,6 +84,8 @@ public class Activity {
                         ("Unsupported activity selected: " + activityName);                                            
             
         }
+        isAnActivity(activityNumber); //run this method to set the 
+                                      //muscleFactor
     }
     
     @Override
@@ -122,42 +126,55 @@ public class Activity {
         boolean answer;
         switch (number) {
             case ACT_BALLSPORTS:
+                muscleFactor = 6;
                 answer = true;
                 break;                
             case ACT_BIKING:
+                muscleFactor = 6;
                 answer = true;
                 break;                
             case ACT_BOXING:
+                muscleFactor = 10;
                 answer = true;
                 break;                
             case ACT_CALISTHENICS:
+                muscleFactor = 8;
                 answer = true;
                 break;
             case ACT_CLIMBING:
+                muscleFactor = 8;
                 answer = true;
                 break;
             case ACT_DANCE:
+                muscleFactor = 10;
                 answer = true;
                 break;
             case ACT_HIKING:
+                muscleFactor = 4;
                 answer = true;
                 break;
             case ACT_MISCCARDIO:
+                muscleFactor = 8;
                 answer = true;
                 break;
             case ACT_RUNNING:
+                muscleFactor = 9;
                 answer = true;
                 break;
             case ACT_SWIMMING:
+                muscleFactor = 10;
                 answer = true;
                 break; 
             case ACT_WALKING:
+                muscleFactor = 3;
                 answer = true;
                 break;
             case ACT_WEIGHTS:
+                muscleFactor = 5;
                 answer = true;
                 break;
             case ACT_YOGA:
+                muscleFactor = 7;
                 answer = true;
                 break;
             default:
@@ -165,5 +182,9 @@ public class Activity {
                 break;                            
         }
         return answer;             
+    }
+
+    public int getMuscleFactor() {
+        return muscleFactor;
     }
 }

@@ -36,5 +36,9 @@ public class User implements java.io.Serializable {
         this.userId = userId;
     }
 
+    @Override
+    public String toString () {
+        return this.username;
+    }
     
 }

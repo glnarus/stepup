@@ -14,6 +14,7 @@ public class AchievementBean implements Serializable {
     private String minutes;
     private String notes;
     private String dateActivity;
+    private String dateRecorded;
 
     public AchievementBean () {    
     }
@@ -26,6 +27,12 @@ public class AchievementBean implements Serializable {
         this.notes = notes;
         this.dateActivity = dateActivity;
     }
+    
+    public AchievementBean (String activity, String intensity, String minutes,
+                            String notes, String dateActivity, String dateRecorded) {
+        this (activity, intensity, minutes, notes, dateActivity);
+        this.dateRecorded = dateRecorded;
+    }    
     
     public String getActivity() {
         return activity;
@@ -65,6 +72,14 @@ public class AchievementBean implements Serializable {
 
     public void setDateActivity(String dateActivity) {
         this.dateActivity = dateActivity;
+    }
+
+    public String getDateRecorded() {
+        return dateRecorded;
+    }
+
+    public void setDateRecorded(String dateRecorded) {
+        this.dateRecorded = dateRecorded;
     }
     
     

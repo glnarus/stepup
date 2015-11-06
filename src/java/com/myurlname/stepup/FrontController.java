@@ -7,7 +7,9 @@ package com.myurlname.stepup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,8 +40,10 @@ public class FrontController extends HttpServlet {
                 nextPage = home(request);
                 break;
                 
-             
-                    
+            case "logout" :
+                nextPage = logout(request);
+                break;
+                        
             default:                                
                 if (request.getAttribute("user") != null)
                     nextPage = "home";
@@ -50,6 +54,13 @@ public class FrontController extends HttpServlet {
                                                                 response);            
     }
 
+    private String logout (HttpServletRequest request) {
+        request.getSession().setAttribute("user", null);
+        request.getSession().setAttribute("achievements", null);
+        request.getSession().invalidate();
+        return "login";
+    }
+    
     private String login(HttpServletRequest request) {
         //for GET requests, just return and allow JSP to display page
         if (request.getMethod().equals("GET")) return "login";
@@ -68,6 +79,11 @@ public class FrontController extends HttpServlet {
                 return "login";
             } else {
                 request.getSession().setAttribute("user", user);
+                //add the achievement log for this user to the session as well
+                //since we are loading the home page next
+                List<Achievement> achievements = 
+                                            db.getAchievementsByDate(username);
+                request.getSession().setAttribute("achievements", achievements);
                 return "home";
             }
         } else {
@@ -125,10 +141,11 @@ public class FrontController extends HttpServlet {
         return "home";                
     }
     
-    private String home (HttpServletRequest request) {
-        if (request.getMethod().equals("GET")) return "home";
-        User user = (User)request.getSession().getAttribute("user");
+    private String home (HttpServletRequest request) {        
+        User user = (User)request.getSession().getAttribute("user");         
         if (user == null) return "login";
+        if (request.getMethod().equals("GET")) return "home";        
+        //assumes a POST with a logged in user (meaning an achievement logged)
         String activity = request.getParameter("activity");
         String intensity = request.getParameter("intensity");
         String minutes = request.getParameter("minutes");
@@ -149,6 +166,14 @@ public class FrontController extends HttpServlet {
         int achievementId = db.addAchievement (achievement);
         if (achievementId > -1) {
             achievement.setAchievementId(achievementId);
+            List achievements = db.getAchievementsByDate(user.getUsername());
+            //Can be more efficient about the above by adding Achievement, in order
+            //here instead of calling the dbase again.
+            if (achievements == null) {
+                request.setAttribute ("flash",db.getLastError());
+                request.setAttribute("bean", bean);                
+            }                   
+            request.getSession().setAttribute("achievements", achievements);                            
             return "home";
         }
         else {

@@ -15,6 +15,7 @@ public class Achievement implements Serializable {
     private Activity activity;
     private int minutes;
     private Intensity intensity;
+    private int score;
     private String notes;
     private Date activityDate;
     private Date recordedDate;
@@ -22,7 +23,8 @@ public class Achievement implements Serializable {
     private int achievementId;
     
     public Achievement (Activity activity, int minutes, Intensity intensity,
-                        String notes, Date activityDate, Date recordedDate) {
+                        int score, String notes, Date activityDate, 
+                                                          Date recordedDate) {
         
         if (notes != null) {
             notes = StringEscapeUtils.escapeHtml4(notes);
@@ -32,7 +34,8 @@ public class Achievement implements Serializable {
         this.recordedDate = recordedDate;
         this.minutes = minutes;
         this.activity = activity;
-        this.intensity = intensity;            
+        this.intensity = intensity;     
+        this.score = score;
     }          
     
     public Achievement (AchievementBean bean) {
@@ -40,15 +43,29 @@ public class Achievement implements Serializable {
             activity = new Activity (bean.getActivity());
             intensity = new Intensity (bean.getIntensity());
             minutes = Integer.parseInt(bean.getMinutes());
+            score = calculateScore (activity,intensity,minutes);
             if (bean.getNotes() != null) {
                 notes = StringEscapeUtils.escapeHtml4(bean.getNotes());
                 notes = notes.replace("'", "&#39;");    
             }            
                         
             SimpleDateFormat sdf = new SimpleDateFormat("M/dd/yyyy");
-            
-            activityDate = sdf.parse(bean.getDateActivity());                         
-            recordedDate = new Date();  //not really used, it's set by dbase
+            String strDate = bean.getDateActivity();
+            if (strDate != null) {
+                strDate = strDate.replace('-', '/');
+                strDate = strDate.replace('.', '/');
+                strDate = strDate.replace('\\', '/');
+                activityDate = sdf.parse(strDate);                                                            
+            }
+            strDate = bean.getDateRecorded();
+            if (strDate != null) {
+                strDate = strDate.replace('-', '/');
+                strDate = strDate.replace('.', '/');
+                strDate = strDate.replace('\\', '/');
+                recordedDate = sdf.parse(strDate);                 
+            }    
+            else 
+                recordedDate = new Date();  //not really used, it's set by dbase            
         }
         catch (Exception e) {
             //something went wrong with the inputs, so let's null out stuff
@@ -56,6 +73,7 @@ public class Achievement implements Serializable {
             activity = null;
             intensity = null;
             minutes = 0;
+            score = 0;
             notes = null;
             activityDate = null;
             recordedDate = null;
@@ -81,6 +99,13 @@ public class Achievement implements Serializable {
         return true; 
     }
     
+    private int calculateScore (Activity activity, Intensity intensity, 
+                                                                int minutes) {
+        //the ALGORITHM for calculating the worth of an exercise
+        //Ranges from 1 to 100
+        //(muscleFactor 1 <=> 10)  (intensityFactor 1 <=> 10)
+        return activity.getMuscleFactor() * intensity.getIntensityFactor();                               
+    }
     
     public Activity getActivity() {
         return activity;
@@ -156,5 +181,31 @@ public class Achievement implements Serializable {
 
     public void setAchievementId(int achievementId) {
         this.achievementId = achievementId;
+    }
+    
+    public String getPrettyPrintActivityDate () {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        return sdf.format(this.activityDate);           
+        
+    }
+    
+    @Override
+    public String toString () {
+        String text = 
+            String.format("%s: %s for %d minutes at %s intensity",
+                           getPrettyPrintActivityDate(),this.activity,
+                           this.minutes,this.intensity);
+        
+        if (!(this.notes == null) && (this.notes.length()>0))
+            text = text + " [" + this.notes + "]";
+        return text;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 }

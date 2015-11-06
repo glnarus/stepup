@@ -65,6 +65,8 @@ References GNARUS.USERS (id);
 CREATE TABLE Achievements (
     exercise VARCHAR(140) NOT NULL,
     duration INT NOT NULL,
+    intensity VARCHAR (20) NOT NULL,
+    score INT NOT NULL,
     notes VARCHAR (200),
     userid INT NOT NULL,
     dateoccurred DATE NOT NULL,
@@ -104,10 +106,10 @@ UPDATE USERS SET profileId=1 WHERE id=1;
 UPDATE USERS SET profileId=2 WHERE id=2;
 UPDATE USERS SET profileId=3 WHERE id=3;
 
-INSERT INTO Achievements (exercise, duration, notes, userid, dateoccurred) VALUES
-    ('Running', 45, 'Really hard today, very warm',1,'2012-07-04'),
-    ('Walking', 120, 'Looking for a banana',2,'2013-09-04'),
-    ('Yoga', 20, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
+INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred) VALUES
+    ('Running', 45, 'Strenuous', 100, 'Really hard today, very warm',1,'2012-07-04'),
+    ('Walking', 120, 'Light', 30, 'Looking for a banana',2,'2013-09-04'),
+    ('Yoga', 20, 'Moderate', 30, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
 
 INSERT INTO Posts (content, authorid, postdate) VALUES
     ('I''m super tired of exercising!', 1, '2012-06-09'),

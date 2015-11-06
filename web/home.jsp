@@ -3,7 +3,7 @@
     Created on : Oct 31, 2015, 5:08:52 PM
     Author     : gabriel
 --%>
-
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@page contentType="text/html" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 <!DOCTYPE html>
 <html>
@@ -47,7 +47,13 @@
                 <tr><td colspan="2"><input type="submit" value="Log it!"/></td></tr>
             </table>
         </form>
-        <p><a href="stepup?action=login">Login existing user</a>
-        </p>        
+        <p> <a href="stepup?action=dashboard">Group Dashboard</a> |
+            <a href="stepup?action=profile">My Profile</a> |            
+            <a href="stepup?action=logout">Logout</a>
+        </p>
+        <h2> Achievement Log </h2>
+            <c:forEach var="achievement" items="${achievements}">
+                ${achievement.user}: ${achievement}<br>
+            </c:forEach>        
     </body>    
 </html>

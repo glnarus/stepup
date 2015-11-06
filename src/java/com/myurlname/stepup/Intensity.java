@@ -1,20 +1,20 @@
 package com.myurlname.stepup;
 
 /**
- * An object indicating the intensity of a workout; light, moderate, hard, 
- * strenuous
+ * An object indicating the intensityFactor of a workout; light, moderate, hard, 
+ strenuous
  * @author gabriel
  */
 public class Intensity {
-    private final int INT_LIGHT = 0;
-    private final int INT_MODERATE = 10;
-    private final int INT_HARD = 20;
-    private final int INT_STRENUOUS = 30;
-    private int intensity;
+    private final int INT_LIGHT = 1;
+    private final int INT_MODERATE = 4;
+    private final int INT_HARD = 7;
+    private final int INT_STRENUOUS = 10;
+    private int intensityFactor;
     
     public Intensity (int intensity) {
         if (isAnIntensity (intensity))
-            this.intensity = intensity;
+            intensityFactor = intensity;
         else
             throw new UnsupportedOperationException 
                         ("Unsupported intensity level: " + intensity);
@@ -24,16 +24,16 @@ public class Intensity {
     public Intensity (String intensity) {
         switch (intensity) {
             case "Light":
-                this.intensity = INT_LIGHT;
+                intensityFactor = INT_LIGHT;
                 break;
             case "Moderate":
-                this.intensity = INT_MODERATE;
+                intensityFactor = INT_MODERATE;
                 break;
             case "Hard":
-                this.intensity = INT_HARD;
+                intensityFactor = INT_HARD;
                 break;
             case "Strenuous":
-                this.intensity = INT_STRENUOUS;
+                intensityFactor = INT_STRENUOUS;
                 break;       
             default:
                 throw new UnsupportedOperationException 
@@ -43,7 +43,7 @@ public class Intensity {
     
     @Override
     public String toString () {
-        switch (this.intensity) {
+        switch (intensityFactor) {
             case INT_LIGHT: 
                 return "Light";
             case INT_MODERATE: 
@@ -70,6 +70,10 @@ public class Intensity {
                 return false;
         }        
         
+    }
+
+    public int getIntensityFactor() {
+        return intensityFactor;
     }
     
 }
