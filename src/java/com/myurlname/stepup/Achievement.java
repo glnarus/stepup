@@ -15,15 +15,16 @@ public class Achievement implements Serializable {
     private Activity activity;
     private int minutes;
     private Intensity intensity;
-    private int score;
+    private double score;
     private String notes;
     private Date activityDate;
     private Date recordedDate;
     private User user;
     private int achievementId;
+    private static final double CAP = 1.252;
     
     public Achievement (Activity activity, int minutes, Intensity intensity,
-                        int score, String notes, Date activityDate, 
+                        double score, String notes, Date activityDate, 
                                                           Date recordedDate) {
         
         if (notes != null) {
@@ -41,7 +42,7 @@ public class Achievement implements Serializable {
     public Achievement (AchievementBean bean) {
         try { 
             activity = new Activity (bean.getActivity());
-            intensity = new Intensity (bean.getIntensity());
+            intensity = new Intensity (bean.getIntensity());            
             minutes = Integer.parseInt(bean.getMinutes());
             score = calculateScore (activity,intensity,minutes);
             if (bean.getNotes() != null) {
@@ -99,12 +100,33 @@ public class Achievement implements Serializable {
         return true; 
     }
     
-    private int calculateScore (Activity activity, Intensity intensity, 
+    private double calculateScore (Activity activity, Intensity intensity, 
                                                                 int minutes) {
-        //the ALGORITHM for calculating the worth of an exercise
-        //Ranges from 1 to 100
-        //(muscleFactor 1 <=> 10)  (intensityFactor 1 <=> 10)
-        return activity.getMuscleFactor() * intensity.getIntensityFactor();                               
+        /*the ALGORITHM for calculating the worth of an exercise
+        (muscleFactor 1 <=> 10).  We want maximum results when MF is 10.
+        This means we take (MuscleFactor / 10)
+        We also have the concept of duration.  Duration required to get full 
+        credit is based on intensity.
+        
+        (minutes/IntensityMinutes)
+        Multiply the two to get a score between 0 and 1
+        score = muscleFactor/10  *  minutes/intensityMinutes
+        Cap scores more than 1 to CAP (this allows light/moderate exercises to
+        skip a day (do 4 instead of 5) if they exercise a lot)
+        Examples:  
+        Running at moderate intensity for 20 min = 10/10 * 20/30 = 0.66
+        Climbing strenuously for 15 minutes = 8/10 * 15/20 = 0.6
+        Hiking lightly for 6 hours = 4/10 * 240/30 = CAP (see top of file)
+        */
+        int muscleF = activity.getMuscleFactor();
+        int minMinutes = intensity.getMinimumMinutes();
+        double tempScore = muscleF / Activity.ACT_MAXMF;
+        tempScore = tempScore * (minutes/intensity.getMinimumMinutes());
+        if (tempScore > CAP)
+            tempScore = CAP;
+        else if (tempScore < 0)
+            tempScore = 0.0;
+        return tempScore;                        
     }
     
     public Activity getActivity() {
@@ -201,7 +223,7 @@ public class Achievement implements Serializable {
         return text;
     }
 
-    public int getScore() {
+    public double getScore() {
         return score;
     }
 

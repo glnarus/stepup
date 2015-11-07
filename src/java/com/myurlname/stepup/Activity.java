@@ -10,6 +10,7 @@ public class Activity {
     private int activityNumber;
     private int muscleFactor; //ranges from 1 to 10 in terms of muscle
                               //recruitment
+    public final static int ACT_MAXMF = 10;
         
     public final int ACT_BALLSPORTS = 0;
     public final int ACT_BIKING = 100;
@@ -158,7 +159,7 @@ public class Activity {
                 answer = true;
                 break;
             case ACT_RUNNING:
-                muscleFactor = 9;
+                muscleFactor = 10;
                 answer = true;
                 break;
             case ACT_SWIMMING:

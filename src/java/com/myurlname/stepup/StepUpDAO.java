@@ -163,7 +163,7 @@ public class StepUpDAO {
             pstat.setString(1, achievement.getActivity().toString());
             pstat.setInt(2, achievement.getMinutes());
             pstat.setString(3, achievement.getIntensity().toString());
-            pstat.setInt(4, achievement.getScore());
+            pstat.setDouble(4, achievement.getScore());
             pstat.setString(5, achievement.getNotes());
             pstat.setInt(6, achievement.getUser().getUserId());
             pstat.setDate(7, new java.sql.Date (achievement.getActivityDate().getTime()));
@@ -231,7 +231,7 @@ public class StepUpDAO {
                 String exercise = rs.getString("exercise");
                 int minutes = rs.getInt("duration");
                 String intensity = rs.getString("intensity");
-                int score = rs.getInt("score");
+                double score = rs.getDouble("score");
                 String notes = rs.getString("notes");
                 Date dateOccurred = new Date(rs.getDate("dateoccurred").getTime());
                 Date dateRecorded = new Date(rs.getDate("daterecorded").getTime());

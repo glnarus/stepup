@@ -8,52 +8,56 @@ import java.io.Serializable;
  * @author gabriel
  */
 public class Badge implements Serializable {
-    private String badgeLevel; //Grasshopper, Badger, Bear
-    private String badgeHabit; //New, Ramping, Routine
-    public final static String LEVEL1 = "Rabbit";
-    public final static String LEVEL2 = "Goat"; //mountain goat
-    public final static String LEVEL3 = "Kangaroo";
-    public final static String HABIT1 = "New";
-    public final static String HABIT2 = "Working";
-    public final static String HABIT3 = "Confirmed";
+    private int badgeLevel; //Rabbit(1), Mountain Goat(2), Kangaroo(3)
+    private int badgeHabit; //Baby(1), Kid(2), Star(3)
+    public final static String [] LEVELS = {"No Badge", "Rabbit", "Goat",
+                                                            "Kangaroo"};
+    public final static String [] HABITS = {"Idle", "Baby", "Kid", "Star"};    
 
-    public Badge (String level, String habit) {
-        setBadgeLevel (level);
-        setBadgeHabit (habit);
+    public Badge (int level, int habit) {
+        if ((level >= 0) && (level < LEVELS.length))
+            if ((habit >= 0) && (habit < HABITS.length)){
+                badgeLevel = level;
+                badgeHabit = habit;                
+            }
     }
     
-    public Badge () {}
+    public Badge () {
+        this.badgeLevel = 0;
+        this.badgeHabit = 0;
+    }
     
-    public String getBadgeLevel() {
+    public int getBadgeLevel() {
         return badgeLevel;
     }
+    
+    public String getBadgeLevelName() {
+        return LEVELS[badgeLevel];
+    }    
+ 
 
-    public final void setBadgeLevel(String level) {
-        if (!(level.equalsIgnoreCase(LEVEL1) || 
-           level.equalsIgnoreCase(LEVEL2) ||
-           level.equalsIgnoreCase(LEVEL3))) 
-            badgeLevel = level;       
-        else
-            throw new UnsupportedOperationException 
-                        ("Unsupported badge level: " + level);
-    }
-
-    public String getBadgeHabit() {
+    public int getBadgeHabit() {
         return badgeHabit;
     }
 
-    public final void setBadgeHabit(String habit) {
-        if (!(habit.equalsIgnoreCase(HABIT1) || 
-           habit.equalsIgnoreCase(HABIT2) ||
-           habit.equalsIgnoreCase(HABIT3)))                 
-            badgeHabit = habit;
+    public String getBadgeHabitName() {
+        return HABITS[badgeHabit];
+    }                                  
+
+    public void setBadgeLevel(int badgeLevel) {
+        if ((badgeLevel >= 0) && (badgeLevel < LEVELS.length))
+                this.badgeLevel = badgeLevel;        
+        else    
+            throw new UnsupportedOperationException 
+                    ("Unsupported badge level: " + badgeLevel);        
+    }
+
+    public void setBadgeHabit(int badgeHabit) {
+        if ((badgeHabit >= 0) && (badgeHabit < HABITS.length))
+                this.badgeHabit = badgeHabit;  
         else
             throw new UnsupportedOperationException 
-                        ("Unsupported badge habit: " + habit);
+                    ("Unsupported badge habit: " + badgeHabit);
     }
-    
-    
-            
-            
-    
+                
 }
