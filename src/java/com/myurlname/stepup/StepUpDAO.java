@@ -16,10 +16,10 @@ import java.util.List;
  * using JDBC commands directly.
  */
 public class StepUpDAO {
-    
+
     private Connection CONN;
     private String lastError;
-    
+
     public StepUpDAO (String jdbcUrl) {
         try {
             CONN = DriverManager.getConnection(jdbcUrl);
@@ -27,9 +27,9 @@ public class StepUpDAO {
         }
         catch (SQLException sqle) {
             lastError = sqle.getMessage();
-        }            
+        }
     }
-    
+
     /** Use after calling a DAO method to get error information.
      * returns NULL if no error.
      * @return NULL or error message
@@ -37,7 +37,7 @@ public class StepUpDAO {
     public String getLastError () {
         return lastError;
     }
-    
+
     /**Authenticate assumes the username and password fields
      * have already been validated (ie, no SQL injection, html
      * injection).
@@ -47,7 +47,7 @@ public class StepUpDAO {
      */
     public User authenticate (String username, String password) {
         User user = null;
-        String sql = "SELECT * FROM USERS WHERE USERNAME = '" + 
+        String sql = "SELECT * FROM USERS WHERE USERNAME = '" +
                      username + "' AND PASSWORD = '" + password + "'";
         Statement stat = null;
         ResultSet rs = null;
@@ -55,7 +55,9 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("id"));
+                user = new User(rs.getString("username"), rs.getInt("id"),
+                                rs.getInt("badgelevel"),
+                                rs.getInt("badgehabit"));
             }
             lastError = null;
         } catch (SQLException sqle) {
@@ -70,15 +72,15 @@ public class StepUpDAO {
                     stat.close();
                 } catch (SQLException sqle) {}
         }
-        return user;                      
+        return user;
     }
-    
+
     /**Call this method to register a new user, it builds the Profile and
      * User table entries for a user, and if successful, returns a valid User
      * object complete with username and userId already set.  If anything
      * goes wrong, it will return null and you can read about the failure
      * with the getLastError() method.
-     * @param Profile object
+     * @param p object
      * @return User object
      */
     public User register(Profile p) {
@@ -90,10 +92,10 @@ public class StepUpDAO {
     ResultSet userRs = null, profRs = null;
     int userId = 0, profileId = 0;
     User user = null;
-    if (!p.validateRegistration()) return null; //controller should already 
+    if (!p.validateRegistration()) return null; //controller should already
                                             //do this, but check anyway
     try {
-        pstatUser = CONN.prepareStatement(userSql, 
+        pstatUser = CONN.prepareStatement(userSql,
                                           Statement.RETURN_GENERATED_KEYS);
         pstatUser.setString(1, p.getUsername());
         pstatUser.setString(2, p.getPassword1());
@@ -101,7 +103,7 @@ public class StepUpDAO {
         userRs = pstatUser.getGeneratedKeys();
         if (userRs.next())
             userId = userRs.getInt(1);
-        pstatProf = CONN.prepareStatement(profSql, 
+        pstatProf = CONN.prepareStatement(profSql,
                                           Statement.RETURN_GENERATED_KEYS);
 
         pstatProf.setString(1, p.getFirstName());
@@ -110,7 +112,7 @@ public class StepUpDAO {
         pstatProf.setString(4, p.getPhone());
         pstatProf.setInt(5, userId);
         pstatProf.setString(6, p.getGoal());
-        pstatProf.setString(7, p.getReward());           
+        pstatProf.setString(7, p.getReward());
         pstatProf.executeUpdate();
 
         profRs = pstatProf.getGeneratedKeys();
@@ -119,9 +121,10 @@ public class StepUpDAO {
         pstatUpdate = CONN.prepareStatement(updateSql);
         pstatUpdate.setInt(1, profileId);
         pstatUpdate.setInt(2, userId);
-        pstatUpdate.executeUpdate();  
+        pstatUpdate.executeUpdate();
         lastError = null;
-        user = new User(p.getUsername(), userId);
+        user = new User(p.getUsername(), userId,
+                        Badge.LOWEST_LEVEL, Badge.LOWEST_HABIT);
     } catch (SQLException sqle) {
         lastError = sqle.getMessage();
     } finally {
@@ -138,26 +141,24 @@ public class StepUpDAO {
     }
     return user;
 }
-    
+
     /** Writes a pre-validated Achievement to the database and returns
      * an ID for that achievement.  If anything goes wrong, the ID will
      * be negative and you can find error information using getLastError()
-     * @param user object that this achievement belongs to
      * @param achievement object for the achievement
      * @return achievementID (or -1 if error)
      */
-    public int addAchievement (Achievement achievement) {        
+    public int addAchievement (Achievement achievement) {
         String sql = "INSERT INTO ACHIEVEMENTS (exercise,duration,";
         sql += "intensity, score, notes,userid,dateoccurred) ";
-        sql += "VALUES (?,?,?,?,?,?,?)";       
+        sql += "VALUES (?,?,?,?,?,?,?)";
         PreparedStatement pstat = null;
         ResultSet rs = null;
         int achievementId = -1;
-        
         if (!achievement.validate()) {
             lastError = "Invalid achievement";
             return -1; //controller should already do this, but check anyway
-        }                                                 
+        }
         try {
             pstat = CONN.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             pstat.setString(1, achievement.getActivity().toString());
@@ -174,22 +175,47 @@ public class StepUpDAO {
                 lastError = null;
             }
             else
-                lastError = "Unable to save achievement";                        
+                lastError = "Unable to save achievement";
         } catch (SQLException sqle) {
             lastError = sqle.getMessage();
         } finally {
             if (rs != null)
-                try { rs.close(); } catch (SQLException sqle) {}            
+                try { rs.close(); } catch (SQLException sqle) {}
             if (pstat != null)
-                try { pstat.close(); } catch (SQLException sqle) {}            
+                try { pstat.close(); } catch (SQLException sqle) {}
         }
-        return achievementId;        
+        return achievementId;
     }
-    
+
+    /** Updates the badge level/habit for a user.  Use this after adding
+     * an achievement, for example.
+     * @param userId user ID value
+     * @param Badge object for the badge levels
+     * @return -1 if error, anything else for pass
+     */
+    public int updateBadge (int userId, Badge badge) {
+        String sql = "UPDATE Users SET badgelevel=?,badgehabit=? WHERE id=?";
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setInt(1,badge.getBadgeLevel());
+            pstat.setInt(2, badge.getBadgeHabit());
+            pstat.setInt(3, userId);
+            pstat.executeUpdate();
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return -1;
+        } finally {
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return 0;
+    }
+
     public List<Achievement> getAllAchievementsByDate() {
         return getAchievementsByDate ("%");
     }
-    
+
     public User getUserById (int userId) {
         User user = null;
         String sql = "SELECT * FROM USERS WHERE ID = " + userId;
@@ -199,7 +225,9 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("id"));
+                user = new User(rs.getString("username"), rs.getInt("id"),
+                                rs.getInt("badgelevel"),
+                                rs.getInt("badgehabit"));
             }
             lastError = null;
         } catch (SQLException sqle) {
@@ -214,7 +242,7 @@ public class StepUpDAO {
                     stat.close();
                 } catch (SQLException sqle) {}
         }
-        return user;                         
+        return user;
     }
 
     public List<Achievement> getAchievementsByDate(String username) {
@@ -235,12 +263,12 @@ public class StepUpDAO {
                 String notes = rs.getString("notes");
                 Date dateOccurred = new Date(rs.getDate("dateoccurred").getTime());
                 Date dateRecorded = new Date(rs.getDate("daterecorded").getTime());
-                
+
                 Activity objActivity = new Activity (exercise);
                 Intensity objIntensity = new Intensity (intensity);
-                
+
                 Achievement achievement = new Achievement (objActivity, minutes,
-                        objIntensity, score, notes, dateOccurred, dateRecorded);                
+                        objIntensity, score, notes, dateOccurred, dateRecorded);
                 User user = getUserById(rs.getInt("userid"));
                 achievement.setUser(user);
                 achievements.add(achievement);
@@ -263,11 +291,11 @@ public class StepUpDAO {
             if (stat != null)
                 try {
                     stat.close();
-                } catch (SQLException sqle) {}            
+                } catch (SQLException sqle) {}
         }
-        return achievements;   
-    }    
-        
+        return achievements;
+    }
+
     public void close ()
     {
         try {
@@ -275,8 +303,8 @@ public class StepUpDAO {
                 CONN.close();
         }
         catch (Exception e) {
-            lastError = e.getMessage();            
+            lastError = e.getMessage();
         }
     }
-    
+
 }

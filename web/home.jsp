@@ -13,7 +13,8 @@
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>        
     </head>
     <body>
-        <h1>Welcome back ${user.username}!</h1>   
+        <h1>Welcome back ${user.username}!</h1>
+        <h2>Badge: ${user.badge.badgeHabitName}&nbsp;${user.badge.badgeLevelName}
         <h2>Enter a new achievement</h2>
         <h2 class="flash">${flash}</h2>
         <form method="POST" action="stepup" id="achievementform">

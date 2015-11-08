@@ -16,6 +16,8 @@ DROP TABLE Users;
 CREATE TABLE Users (
     username VARCHAR(15) NOT NULL UNIQUE,
     password VARCHAR(15) NOT NULL,
+    badgelevel int,
+    badgehabit int,
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     profileId INT
 );
@@ -92,10 +94,10 @@ References GNARUS.USERS (id);
 
 ----> Start here with the adds
 
-INSERT INTO Users (username, password) VALUES
-    ('johndoe', 'password'),
-    ('jilljack', 'password'),
-    ('monkeyman', 'banana');
+INSERT INTO Users (username, password, badgelevel, badgehabit) VALUES
+    ('johndoe', 'password',0,0),
+    ('jilljack', 'password',0,0),
+    ('monkeyman', 'banana',0,0);
 
 INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
     ('2012-06-09', 'John', 'Doe', 'jd@example.com',1),

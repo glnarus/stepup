@@ -21,7 +21,9 @@ public class Achievement implements Serializable {
     private Date recordedDate;
     private User user;
     private int achievementId;
+    private double activityValue; //how much towards the weekly goal is this?
     private static final double CAP = 1.252;
+    private static final double MAX_DAILY_VALUE = 0.3334;
     
     public Achievement (Activity activity, int minutes, Intensity intensity,
                         double score, String notes, Date activityDate, 
@@ -85,13 +87,18 @@ public class Achievement implements Serializable {
     }
 
     public boolean validate () {
+        Date today = new Date();
         if (minutes <= 0) 
             return false;
         if (notes.length() > 200) 
             return false;
         if (recordedDate == null)
             return false;
+        if (recordedDate.compareTo(today)> 0)
+            return false;        
         if (activityDate == null)
+            return false;
+        if (activityDate.compareTo(today)> 0)
             return false;
         if (activity == null)
             return false;
@@ -227,7 +234,26 @@ public class Achievement implements Serializable {
         return score;
     }
 
-    public void setScore(int score) {
-        this.score = score;
+    public void setScore(double score) {
+        if (score < 0)
+            this.score = 0.0;
+        else if (score > CAP) {
+            this.score = CAP;
+        }
+        else
+            this.score = score;
+    }
+
+    public double getActivityValue() {
+        return activityValue;
+    }
+
+    public void setActivityValue(double activityValue) {
+        if (activityValue < 0)
+                this.activityValue = 0.0;
+        else if (activityValue >  MAX_DAILY_VALUE) 
+            this.activityValue = MAX_DAILY_VALUE;
+        else
+            this.activityValue = activityValue;
     }
 }

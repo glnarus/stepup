@@ -1,6 +1,6 @@
 /**
  * The front controller for the StepUp application.  All web requests pass
- * through this servlet, and it passes control around to other jsp's and 
+ * through this servlet, and it passes control around to other jsp's and
  * servlets through query strings and forwards.
 */
 package com.myurlname.stepup;
@@ -31,27 +31,27 @@ public class FrontController extends HttpServlet {
             case "login" :
                 nextPage = login (request);
                 break;
-                
+
             case "register":
                 nextPage = register (request);
                 break;
-                
+
             case "home":
                 nextPage = home(request);
                 break;
-                
+
             case "logout" :
                 nextPage = logout(request);
                 break;
-                        
-            default:                                
+
+            default:
                 if (request.getAttribute("user") != null)
                     nextPage = "home";
                 else
-                    nextPage = "login";                            
+                    nextPage = "login";
         }
-        request.getRequestDispatcher(nextPage + ".jsp").forward(request, 
-                                                                response);            
+        request.getRequestDispatcher(nextPage + ".jsp").forward(request,
+                                                                response);
     }
 
     private String logout (HttpServletRequest request) {
@@ -60,7 +60,7 @@ public class FrontController extends HttpServlet {
         request.getSession().invalidate();
         return "login";
     }
-    
+
     private String login(HttpServletRequest request) {
         //for GET requests, just return and allow JSP to display page
         if (request.getMethod().equals("GET")) return "login";
@@ -73,7 +73,7 @@ public class FrontController extends HttpServlet {
             User user = db.authenticate(username, password);
             if (user == null) {
                 String error = db.getLastError();
-                request.setAttribute("flash", 
+                request.setAttribute("flash",
                         (error == null? "No user/password combination found" :
                                                                       error));
                 return "login";
@@ -81,18 +81,18 @@ public class FrontController extends HttpServlet {
                 request.getSession().setAttribute("user", user);
                 //add the achievement log for this user to the session as well
                 //since we are loading the home page next
-                List<Achievement> achievements = 
+                List<Achievement> achievements =
                                             db.getAchievementsByDate(username);
                 request.getSession().setAttribute("achievements", achievements);
                 return "home";
             }
         } else {
-            request.setAttribute("flash", 
+            request.setAttribute("flash",
                                  "Please follow username and password rules");
             return "login";
         }
-    }    
-    
+    }
+
     private String register (HttpServletRequest request) {
         //for GET requests, just return and allow JSP to display
         //the register page
@@ -110,8 +110,8 @@ public class FrontController extends HttpServlet {
         String reward = request.getParameter("reward");
         String emailSubsribe = request.getParameter("emailsubscribe");
         String textSubscribe = request.getParameter("textsubscribe");
-        RegistrationBean r = new RegistrationBean (username, 
-                                                   password1, 
+        RegistrationBean r = new RegistrationBean (username,
+                                                   password1,
                                                    password2,
                                                    firstName,
                                                    lastName,
@@ -138,13 +138,13 @@ public class FrontController extends HttpServlet {
         }
         //Everything registered fine, let's log in the user officially
         request.getSession().setAttribute("user", user);
-        return "home";                
+        return "home";
     }
-    
-    private String home (HttpServletRequest request) {        
-        User user = (User)request.getSession().getAttribute("user");         
+
+    private String home (HttpServletRequest request) {
+        User user = (User)request.getSession().getAttribute("user");
         if (user == null) return "login";
-        if (request.getMethod().equals("GET")) return "home";        
+        if (request.getMethod().equals("GET")) return "home";
         //assumes a POST with a logged in user (meaning an achievement logged)
         String activity = request.getParameter("activity");
         String intensity = request.getParameter("intensity");
@@ -160,30 +160,35 @@ public class FrontController extends HttpServlet {
             return "home";
         }
         achievement.setUser(user);
-        
         //Everything is valid about this achievement, let's write it to the DB!
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         int achievementId = db.addAchievement (achievement);
         if (achievementId > -1) {
             achievement.setAchievementId(achievementId);
             List achievements = db.getAchievementsByDate(user.getUsername());
+            if ((achievements != null) && (!achievements.isEmpty())) {
+                Badge badge = BadgeCalculator.calculateBadge(achievements, new Date());
+                int upRet = db.updateBadge(user.getUserId(), badge);
+                if (upRet != -1)
+                    user.setBadge(badge);
+            }
             //Can be more efficient about the above by adding Achievement, in order
             //here instead of calling the dbase again.
-            if (achievements == null) {
+            if (achievements == null)  {
                 request.setAttribute ("flash",db.getLastError());
-                request.setAttribute("bean", bean);                
-            }                   
-            request.getSession().setAttribute("achievements", achievements);                            
+                request.setAttribute("bean", bean);
+            }
+            request.getSession().setAttribute("achievements", achievements);
             return "home";
         }
         else {
             request.setAttribute ("flash",db.getLastError());
             request.setAttribute("bean", bean);
             return "home";
-        }       
-        
+        }
+
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

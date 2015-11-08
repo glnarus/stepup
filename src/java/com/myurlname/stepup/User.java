@@ -7,19 +7,24 @@ package com.myurlname.stepup;
 public class User implements java.io.Serializable {
     private String username;
     private int userId;
+    private Badge badge;
     private Profile p;
 
-    public User (String username, int userId) {
-        this.username = username; 
+    public User (String username, int userId, int level, int habit) {
+        this.username = username;
         this.userId = userId;
+        this.badge = new Badge (level, habit);
     }
-    
-    public User (String username, int userId, Profile p) {
+
+    public User () { }
+
+    public User (String username, int userId, Badge badge, Profile p) {
         this.username = username;
         this.userId = userId;
         this.p = p;
+        this.badge = badge;
     }
-    
+
     public String getUsername() {
         return username;
     }
@@ -40,5 +45,13 @@ public class User implements java.io.Serializable {
     public String toString () {
         return this.username;
     }
-    
+
+    public Badge getBadge() {
+        return badge;
+    }
+
+    public void setBadge(Badge badge) {
+        this.badge = badge;
+    }
+
 }

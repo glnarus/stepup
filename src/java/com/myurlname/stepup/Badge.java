@@ -12,29 +12,31 @@ public class Badge implements Serializable {
     private int badgeHabit; //Baby(1), Kid(2), Star(3)
     public final static String [] LEVELS = {"No Badge", "Rabbit", "Goat",
                                                             "Kangaroo"};
-    public final static String [] HABITS = {"Idle", "Baby", "Kid", "Star"};    
+    public final static String [] HABITS = {"Idle", "Baby", "Kid", "Star"};
+    public final static int LOWEST_LEVEL = 0;
+    public final static int LOWEST_HABIT = 0;
 
     public Badge (int level, int habit) {
         if ((level >= 0) && (level < LEVELS.length))
             if ((habit >= 0) && (habit < HABITS.length)){
                 badgeLevel = level;
-                badgeHabit = habit;                
+                badgeHabit = habit;
             }
     }
-    
+
     public Badge () {
         this.badgeLevel = 0;
         this.badgeHabit = 0;
     }
-    
+
     public int getBadgeLevel() {
         return badgeLevel;
     }
-    
+
     public String getBadgeLevelName() {
         return LEVELS[badgeLevel];
-    }    
- 
+    }
+
 
     public int getBadgeHabit() {
         return badgeHabit;
@@ -42,22 +44,27 @@ public class Badge implements Serializable {
 
     public String getBadgeHabitName() {
         return HABITS[badgeHabit];
-    }                                  
+    }
 
     public void setBadgeLevel(int badgeLevel) {
         if ((badgeLevel >= 0) && (badgeLevel < LEVELS.length))
-                this.badgeLevel = badgeLevel;        
-        else    
-            throw new UnsupportedOperationException 
-                    ("Unsupported badge level: " + badgeLevel);        
+                this.badgeLevel = badgeLevel;
+        else
+            throw new UnsupportedOperationException
+                    ("Unsupported badge level: " + badgeLevel);
     }
 
     public void setBadgeHabit(int badgeHabit) {
         if ((badgeHabit >= 0) && (badgeHabit < HABITS.length))
-                this.badgeHabit = badgeHabit;  
+                this.badgeHabit = badgeHabit;
         else
-            throw new UnsupportedOperationException 
+            throw new UnsupportedOperationException
                     ("Unsupported badge habit: " + badgeHabit);
     }
-                
+
+    @Override
+    public String toString () {
+        return getBadgeHabitName() + " " + getBadgeLevelName();
+
+    }
 }
