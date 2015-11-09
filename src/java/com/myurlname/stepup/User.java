@@ -8,12 +8,20 @@ public class User implements java.io.Serializable {
     private String username;
     private int userId;
     private Badge badge;
-    private Profile p;
+    private Profile profile;
 
     public User (String username, int userId, int level, int habit) {
         this.username = username;
         this.userId = userId;
         this.badge = new Badge (level, habit);
+        profile = null;
+    }
+
+    public User (String username, int userId, int level, int habit, Profile p) {
+        this.username = username;
+        this.userId = userId;
+        this.badge = new Badge (level, habit);
+        profile = p;
     }
 
     public User () { }
@@ -21,7 +29,7 @@ public class User implements java.io.Serializable {
     public User (String username, int userId, Badge badge, Profile p) {
         this.username = username;
         this.userId = userId;
-        this.p = p;
+        profile = p;
         this.badge = badge;
     }
 
@@ -52,6 +60,14 @@ public class User implements java.io.Serializable {
 
     public void setBadge(Badge badge) {
         this.badge = badge;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 
 }

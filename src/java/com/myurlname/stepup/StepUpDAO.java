@@ -124,7 +124,7 @@ public class StepUpDAO {
         pstatUpdate.executeUpdate();
         lastError = null;
         user = new User(p.getUsername(), userId,
-                        Badge.LOWEST_LEVEL, Badge.LOWEST_HABIT);
+                        Badge.LOWEST_LEVEL, Badge.LOWEST_HABIT, p);
     } catch (SQLException sqle) {
         lastError = sqle.getMessage();
     } finally {
@@ -141,6 +141,47 @@ public class StepUpDAO {
     }
     return user;
 }
+
+    /** Reads a profile for a given user ID and creates a Profile object
+     * based on the Profile table.
+     * @param userId user ID for the profile you want to pull up
+     * @return Profile object (null if error)
+     */
+    public Profile getProfileFor(User user) {
+        Profile profile = null;
+        String sql = "SELECT * FROM PROFILES WHERE USERID = ?";
+        PreparedStatement pstat = null;
+        ResultSet rsData = null;
+        int profileId = 0;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setInt(1, user.getUserId());
+            pstat.executeQuery();
+            rsData = pstat.getResultSet();
+            if (rsData.next()) {
+                profile = new Profile (user,
+                                       rsData.getString("firstname"),
+                                       rsData.getString("lastname"),
+                                       rsData.getString("email"),
+                                       rsData.getString("phone"),
+                                       rsData.getString("goal"),
+                                       rsData.getString("reward"),
+                                       rsData.getString("emailsubscribe"),
+                                       rsData.getString("textsubscribe"));
+                profile.setProfileId(rsData.getInt("id"));
+            }
+            else
+                lastError = "Unable to retrieve profile";
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rsData != null)
+                try { rsData.close(); } catch (SQLException sqle) {}
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return profile;
+    }
 
     /** Writes a pre-validated Achievement to the database and returns
      * an ID for that achievement.  If anything goes wrong, the ID will

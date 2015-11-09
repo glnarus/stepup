@@ -40,6 +40,10 @@ public class FrontController extends HttpServlet {
                 nextPage = home(request);
                 break;
 
+            case "profile":
+                nextPage = profile(request);
+                break;
+
             case "logout" :
                 nextPage = logout(request);
                 break;
@@ -99,6 +103,9 @@ public class FrontController extends HttpServlet {
         if (request.getMethod().equals("GET")) return "register";
         //for POST requests, we need to validate the data, and if valid,
         //insert it.
+        User user = (User)request.getSession().getAttribute("user");
+        if (user != null) //if already logged in, kill the session first
+            request.getSession().invalidate();
         String username = request.getParameter("user");
         String password1 = request.getParameter("pass1");
         String password2 = request.getParameter("pass2");
@@ -130,7 +137,7 @@ public class FrontController extends HttpServlet {
         }
         //Data is valid, let's update/create the profile!
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
-        User user = db.register(profile);
+        user = db.register(profile);
         if (user == null) {
             request.setAttribute("flash",db.getLastError());
             request.setAttribute("bean", r);
@@ -139,6 +146,31 @@ public class FrontController extends HttpServlet {
         //Everything registered fine, let's log in the user officially
         request.getSession().setAttribute("user", user);
         return "home";
+    }
+
+    private String profile (HttpServletRequest request) {
+        //for GET requests, make sure the user is logged in and
+        //the profile object is created and attached to the user object
+        //then return and allow profile.jsp to display the data
+        //We do this regardless of GET or POST (editing profile uses a differnt
+        //action word)
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null) return "login";
+        if (user.getProfile() != null)
+            return "profile";
+        //user is logged in, but Profile hasn't been pulled from db yet, do so now..
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        Profile profile = db.getProfileFor(user);
+
+
+        if (profile == null) {
+            request.setAttribute("flash",db.getLastError());
+            return "profile";
+        }
+        user.setProfile(profile);
+        //everything went ok, and now the user object has the profile data,
+        //ready for JSP to display
+        return "profile";
     }
 
     private String home (HttpServletRequest request) {
