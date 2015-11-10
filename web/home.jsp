@@ -49,7 +49,7 @@
             </table>
         </form>
         <p> <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=profile">My Profile</a> |            
+            <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |            
             <a href="stepup?action=logout">Logout</a>
         </p>
         <h2> Achievement Log </h2>

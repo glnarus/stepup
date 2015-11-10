@@ -70,6 +70,43 @@ public class Profile implements Serializable {
         errorMessage = null;
     }
 
+    public Profile (User user,
+                    String firstName, String lastName, String email,
+                    String phone, String goal, String reward,
+                    String emailSubscribe, String textSubscribe,
+                    Date joinDate) {
+        this.userId = user.getUserId();
+        this.username = user.getUsername();
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.goal = goal;
+        this.reward = reward;
+        this.emailSubscribe = emailSubscribe;
+        this.textSubscribe = textSubscribe;
+        this.joinDate = joinDate;
+        errorMessage = null;
+    }
+
+    public Profile (int userId, String userName,
+                    String firstName, String lastName, String email,
+                    String phone, String goal, String reward,
+                    String emailSubscribe, String textSubscribe) {
+        this.userId = userId;
+        this.username = userName;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.goal = goal;
+        this.reward = reward;
+        this.emailSubscribe = emailSubscribe;
+        this.textSubscribe = textSubscribe;
+        joinDate = new Date();
+        errorMessage = null;
+    }
+
     public boolean validateRegistration () {
         return validate(true);
     }
@@ -93,23 +130,35 @@ public class Profile implements Serializable {
                 || (!password1.equals(password2)))
                     setErrorMessage(getErrorMessage() + "password");
         }
+        if (firstName != null) {
+            firstName = firstName.trim();
+        }
         if ((firstName == null) || (!firstName.matches("^[A-Za-z. -]{1,20}$")))
             setErrorMessage(getErrorMessage() + "firstname");
-
+        if (lastName != null) {
+            lastName = lastName.trim();
+        }
         if ((lastName == null) || (!lastName.matches("^[A-Za-z -']{1,30}$")))
             setErrorMessage(getErrorMessage() + "lasttname");
 
+        if (email != null) {
+            email = email.trim();
+        }
         if ((email != null) && (email.length()>0)) {
             EmailValidator ev = EmailValidator.getInstance(false);
             if (!ev.isValid (email))
                 setErrorMessage(getErrorMessage() + "email");
         }
-
+        if (phone != null) {
+            phone = phone.trim();
+        }
         if ((phone != null) && (phone.length()>0)) {
             if (!phone.matches("^\\d{3}-\\d{3}-\\d{4}$"))
                 setErrorMessage(getErrorMessage()+ "phone");
         }
-
+        if (goal != null) {
+            goal = goal.trim();
+        }
         if ((goal != null) && (goal.length()>0)) {
             if (goal.length()>200)
                 setErrorMessage(getErrorMessage()+ "goal");
@@ -118,7 +167,9 @@ public class Profile implements Serializable {
                 goal = goal.replace("'", "&#39;");
             }
         }
-
+        if (reward != null) {
+            reward = reward.trim();
+        }
         if ((reward != null) && (reward.length()>0)) {
             if (reward.length() > 200)
                 setErrorMessage(getErrorMessage()+ "reward");
@@ -156,7 +207,7 @@ public class Profile implements Serializable {
 
     public String getPrettyPrintJoinDate () {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        return sdf.format(this.joinDate);           
+        return sdf.format(this.joinDate);
 
     }
 

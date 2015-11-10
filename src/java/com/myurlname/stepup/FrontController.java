@@ -44,6 +44,10 @@ public class FrontController extends HttpServlet {
                 nextPage = profile(request);
                 break;
 
+            case "editprofile":
+                nextPage = editProfile (request);
+                break;
+
             case "logout" :
                 nextPage = logout(request);
                 break;
@@ -155,21 +159,104 @@ public class FrontController extends HttpServlet {
         //We do this regardless of GET or POST (editing profile uses a differnt
         //action word)
         User user = (User)request.getSession().getAttribute("user");
-        if (user == null) return "login";
-        if (user.getProfile() != null)
-            return "profile";
-        //user is logged in, but Profile hasn't been pulled from db yet, do so now..
+        String profileFor = request.getParameter("profilefor");
+        if (user == null)
+            return "login";
+        else if (profileFor == null)
+            return "home";
+
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
-        Profile profile = db.getProfileFor(user);
-
-
+        User subject = db.getUserByUserName(profileFor);
+        if (subject == null) {
+            request.setAttribute("flash",db.getLastError());
+            return "profile";
+        }
+        Profile profile = db.getProfileFor(subject);
         if (profile == null) {
             request.setAttribute("flash",db.getLastError());
             return "profile";
         }
-        user.setProfile(profile);
-        //everything went ok, and now the user object has the profile data,
+        if (user.getUserId() == subject.getUserId())
+            user.setProfile(profile);
+        request.getSession().setAttribute("profile", profile);
+        //change line below to use "for" attribute's user object
+        //add a reduced Profile object to the profilefor user and have
+        //the .jsp use if/tests on how to write the page (profilefor vs user mismatch is the condition)
+        request.getSession().setAttribute("subject", subject);
+
+        //everything went ok, and now subject has the profile data,
         //ready for JSP to display
+        return "profile";
+    }
+
+    private String editProfile (HttpServletRequest request) {
+        //this method handles both GETs and POSTS.  GETs for
+        //loading the editprofile.jsp page and POSTs for actually
+        //modifying the user's profile.
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        if (request.getMethod().equals("GET")) {
+            Profile profile = db.getProfileFor(user);
+            if (profile == null) {
+                request.setAttribute("flash",db.getLastError());
+                return "editprofile";
+            }
+            RegistrationBean r = new RegistrationBean ("not_editable",
+                                                   "not_editable",
+                                                   "not_editable",
+                                                   profile.getFirstName(),
+                                                   profile.getLastName(),
+                                                   profile.getEmail(),
+                                                   profile.getPhone(),
+                                                   profile.getGoal(),
+                                                   profile.getReward(),
+                                                   profile.getEmailSubscribe(),
+                                                   profile.getTextSubscribe());
+            request.setAttribute("bean", r);
+            user.setProfile(profile);
+            return "editprofile";
+        }
+        //Process the POST; we need to make sure everything is valid, so
+        //let's reuse the registration bean
+        String firstName = request.getParameter("fname");
+        String lastName = request.getParameter("lname");
+        String email = request.getParameter("email");
+        String phone = request.getParameter("phone");
+        String goal = request.getParameter("goal");
+        String reward = request.getParameter("reward");
+        String emailSubsribe = request.getParameter("emailsubscribe");
+        String textSubscribe = request.getParameter("textsubscribe");
+        RegistrationBean r = new RegistrationBean ("not_editable",
+                                                   "not_editable",
+                                                   "not_editable",
+                                                   firstName,
+                                                   lastName,
+                                                   email,
+                                                   phone,
+                                                   goal,
+                                                   reward,
+                                                   emailSubsribe,
+                                                   textSubscribe);
+        Profile profile = new Profile (r);
+        if (!profile.validateRegistration()) {
+            request.setAttribute("flash", "Required information not entered correctly" + profile.getErrorMessage());
+            request.setAttribute("bean", r);
+            request.setAttribute("problems", profile.getErrorMessage());
+            return "editprofile";
+        }
+        //data is ready to be sent to the database.  do NOT update the username
+        //or password of course.
+        User userEdited = db.updateProfile(user, profile);
+        if (userEdited == null) {
+            request.setAttribute("flash", db.getLastError());
+            request.setAttribute("bean", r);
+            return "editprofile";
+        }
+        request.getSession().setAttribute("profile", userEdited.getProfile());
+        request.getSession().setAttribute("user", userEdited);
+        request.getSession().setAttribute("subject", userEdited);
         return "profile";
     }
 

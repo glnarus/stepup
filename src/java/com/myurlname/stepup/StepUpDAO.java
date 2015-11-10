@@ -144,7 +144,7 @@ public class StepUpDAO {
 
     /** Reads a profile for a given user ID and creates a Profile object
      * based on the Profile table.
-     * @param userId user ID for the profile you want to pull up
+     * @param user user object for the profile you want to pull up
      * @return Profile object (null if error)
      */
     public Profile getProfileFor(User user) {
@@ -167,7 +167,8 @@ public class StepUpDAO {
                                        rsData.getString("goal"),
                                        rsData.getString("reward"),
                                        rsData.getString("emailsubscribe"),
-                                       rsData.getString("textsubscribe"));
+                                       rsData.getString("textsubscribe"),
+                          new Date(rsData.getDate("joindate").getTime()));
                 profile.setProfileId(rsData.getInt("id"));
             }
             else
@@ -253,6 +254,47 @@ public class StepUpDAO {
         return 0;
     }
 
+    /** Updates the profile for a user.  This must be done for
+     * pre-existing users, user the register method for new users.
+     * Note that the username and password fields will NOT be changed.
+     * @param user user object.
+     * @param profile object for the new Profile
+     * @return null if error, returns user object with new profile object
+     * attached if successful
+     */
+    public User updateProfile (User user, Profile profile) {
+        String sql = "UPDATE PROFILES SET firstname=?,lastname=?,"
+                + "email=?,phone=?,goal=?,reward=?,emailsubscribe=?,"
+                + "textsubscribe=? WHERE userid = ?";
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setString(1,profile.getFirstName());
+            pstat.setString(2,profile.getLastName());
+            pstat.setString(3,profile.getEmail());
+            pstat.setString(4,profile.getPhone());
+            pstat.setString(5,profile.getGoal());
+            pstat.setString(6,profile.getReward());
+            pstat.setString(7,profile.getEmailSubscribe());
+            pstat.setString(8,profile.getTextSubscribe());
+            pstat.setInt(9, user.getUserId());
+            pstat.executeUpdate();
+            //this was successful, so let's update the user's profile object,
+            //need to fill in the profile ID & joinDate
+            profile = getProfileFor (user);
+            if (profile == null) return null;
+            user.setProfile(profile);
+
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return null;
+        } finally {
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return user;
+    }
+
     public List<Achievement> getAllAchievementsByDate() {
         return getAchievementsByDate ("%");
     }
@@ -260,6 +302,37 @@ public class StepUpDAO {
     public User getUserById (int userId) {
         User user = null;
         String sql = "SELECT * FROM USERS WHERE ID = " + userId;
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            if (rs.next()) {
+                user = new User(rs.getString("username"), rs.getInt("id"),
+                                rs.getInt("badgelevel"),
+                                rs.getInt("badgehabit"));
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return user;
+    }
+
+    public User getUserByUserName (String username) {
+        if (username == null) return null;
+        User user = null;
+        String sql = "SELECT * FROM USERS WHERE USERNAME = " +
+                                                    "'" + username + "'";
         Statement stat = null;
         ResultSet rs = null;
         try {
