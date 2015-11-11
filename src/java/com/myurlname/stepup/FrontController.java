@@ -48,6 +48,10 @@ public class FrontController extends HttpServlet {
                 nextPage = editProfile (request);
                 break;
 
+            case "dashboard":
+                nextPage = dashboard(request);
+                break;
+
             case "logout" :
                 nextPage = logout(request);
                 break;
@@ -150,6 +154,27 @@ public class FrontController extends HttpServlet {
         //Everything registered fine, let's log in the user officially
         request.getSession().setAttribute("user", user);
         return "home";
+    }
+
+    private String dashboard (HttpServletRequest request) {
+        //Currently, only GETs supported.
+        //TODO - add support for POST (ie, the posting feature)
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        List <Achievement> achievements = db.getAllAchievementsByDate();
+        if (achievements == null) {
+            request.setAttribute("flash",db.getLastError());
+            return "dashboard";
+        }
+
+        request.getSession().setAttribute("achievements", achievements);
+
+        //everything went ok, and now subject has the profile data,
+        //ready for JSP to display
+        return "dashboard";
     }
 
     private String profile (HttpServletRequest request) {
