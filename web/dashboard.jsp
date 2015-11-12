@@ -22,6 +22,26 @@
                         [<i>${achievement.notes}</i>]</c:if>
             <br>                                   
         </c:forEach>
+
+        <h2>Shout outs!</h2>
+        <h3>Post to the group wall!</h3>
+        <form method="POST" action="stepup">
+            <input type="hidden" name="action" value="dashboard"/>
+            <table>
+                <tr><td><input type="text" size="80" maxlength="280"
+                               placeholder="What would you like to say?" 
+                               name="content"/></td></tr>                
+                <tr><td colspan="2"><input type="submit" 
+                                           value="Post it!"/></td></tr>
+            </table>
+        </form>        
+        <br>
+        <c:forEach var="post" items="${posts}">
+            [${post.prettyPrintPostDate}]&nbsp;
+            <a href="stepup?action=profile&profilefor=${post.username}">
+                                                        ${post.username} 
+            </a>->&nbsp;&nbsp;${post.content}<br>                                   
+        </c:forEach>            
         <p> <a href="stepup?action=home">Home</a>
             <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |              
             <a href="stepup?action=logout">Logout</a>

@@ -254,6 +254,48 @@ public class StepUpDAO {
         return 0;
     }
 
+    /**
+     * Creates a new Post in the database.  Returns the post ID if successful
+     * otherwise, returns -1
+     * @param post (Post object)
+     * @return post ID or -1 if unsuccessful
+     */
+    public int createPost(Post post) {
+        //front controller should do this, but double check to be sure
+        if (!post.isPostValid()) {
+            this.lastError = "Tried to create a post with invalid post object";
+            return -1;
+        }
+        String sql = "INSERT INTO Posts (content,authorid,postdate) ";
+        sql += "VALUES (?,?,?)";
+        PreparedStatement pstat = null;
+        ResultSet rs = null;
+        int postId = -1;
+        try {
+            pstat = CONN.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+            pstat.setString(1,post.getContent());
+            pstat.setInt(2, post.getUserId());
+            pstat.setDate(3, new java.sql.Date(post.getPostDate().getTime()));
+            pstat.executeUpdate();
+            rs = pstat.getGeneratedKeys();
+            if (rs.next()) {
+                postId = rs.getInt(1);
+                lastError = null;
+            }
+            else
+                lastError = "Unable to save achievement";
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return -1;
+        } finally {
+            if (rs != null)
+                try { rs.close();} catch (SQLException sqle) {}
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return 0;
+    }
+
     /** Updates the profile for a user.  This must be done for
      * pre-existing users, user the register method for new users.
      * Note that the username and password fields will NOT be changed.
@@ -295,9 +337,7 @@ public class StepUpDAO {
         return user;
     }
 
-    public List<Achievement> getAllAchievementsByDate() {
-        return getAchievementsByDate ("%");
-    }
+
 
     public User getUserById (int userId) {
         User user = null;
@@ -359,6 +399,10 @@ public class StepUpDAO {
         return user;
     }
 
+    public List<Achievement> getAllAchievementsByDate() {
+        return getAchievementsByDate ("%");
+    }
+
     public List<Achievement> getAchievementsByDate(String username) {
         List<Achievement> achievements = new ArrayList<>();
         String sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
@@ -409,6 +453,54 @@ public class StepUpDAO {
         }
         return achievements;
     }
+
+    public List<Post> getSortedPostsByDate() {
+        return getUsersPostsByDate ("%");
+    }
+
+    public List<Post> getUsersPostsByDate (String username) {
+        List<Post> posts = new ArrayList<>();
+        String sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
+        sql += "Users.id WHERE username LIKE '%s' ORDER BY postdate DESC";
+        sql = String.format(sql, username);
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                String content = rs.getString("content");
+                int authorId = rs.getInt("authorid");
+                Date postDate = new Date(rs.getDate("postdate").getTime());
+                int postId = rs.getInt("id");
+                String authorName = rs.getString("username");
+                Post post = new Post (content, postDate, authorName, authorId,
+                                    postId);
+                posts.add(post);
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            posts = null;
+            lastError = sqle.getMessage();
+        }
+          catch (Exception e) {
+              //something else went wrong in trying to make the model objects
+              lastError = "Error parsing database entry";
+              posts = null;
+          }
+            finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return posts;
+    }
+
 
     public void close ()
     {

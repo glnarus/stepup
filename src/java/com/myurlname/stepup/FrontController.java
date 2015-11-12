@@ -157,23 +157,65 @@ public class FrontController extends HttpServlet {
     }
 
     private String dashboard (HttpServletRequest request) {
-        //Currently, only GETs supported.
-        //TODO - add support for POST (ie, the posting feature)
+        if (request.getMethod().equals("POST")) {
+            return submitPost (request);
+        }
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";
 
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        //get all the achievements for the activity board...
         List <Achievement> achievements = db.getAllAchievementsByDate();
         if (achievements == null) {
             request.setAttribute("flash",db.getLastError());
             return "dashboard";
         }
-
         request.getSession().setAttribute("achievements", achievements);
+        //get all the posts for the bulletin board...
+        List <Post> posts = db.getSortedPostsByDate();
+        if (posts == null) {
+            request.setAttribute("flash", db.getLastError());
+            return "dashboard";
+        }
+        request.getSession().setAttribute("posts", posts);
+        //everything went ok ready for JSP to display
+        return "dashboard";
+    }
 
-        //everything went ok, and now subject has the profile data,
-        //ready for JSP to display
+    private String submitPost (HttpServletRequest request) {
+        //Currently, only GETs supported.
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+        if (request.getSession().getAttribute("achievements") == null) {
+            //a POST without previously viewing the dashboard is weird, if a user
+            //does this weird thing somehow, send them home
+            return "home";
+        }
+        //build the Post object
+        Post post = new Post (request.getParameter("content"),
+                              user.getUsername(), user.getUserId());
+
+        if (!post.isPostValid()) {
+            request.setAttribute("flash", "Posts must be between 0 and " +
+                                        Post.POST_MAX_LENGTH + " characters");
+            return "dashboard";
+        }
+        //Post checks out ok and Post object translated all HTML/SQL control
+        //characters, so let's update the db
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        int postId = db.createPost(post);
+        if (postId < 0) {
+            request.setAttribute("flash",db.getLastError());
+            return "dashboard";
+        }
+        //pull all posts again (there may have been more posts added since we
+        //have been working on this one)
+        List <Post> posts = db.getSortedPostsByDate();
+
+        request.getSession().setAttribute("posts", posts);
+        //everything went ok ready for JSP to display
         return "dashboard";
     }
 
