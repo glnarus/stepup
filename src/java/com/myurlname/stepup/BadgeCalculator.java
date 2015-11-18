@@ -1,6 +1,9 @@
 package com.myurlname.stepup;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -15,6 +18,8 @@ import java.util.List;
  */
 public class BadgeCalculator {
     private final static long WEEK_MS = 604800000L;
+    private final static long TEN_DAYS_MS = 864000000L;
+    private final static long ONE_DAY_MS = 86400000L;
 
     public static Badge calculateBadge (List<Achievement> achievements, Date today) {
         //badge level corresponds to only this past week.
@@ -58,29 +63,36 @@ public class BadgeCalculator {
         return badges[0];
     }
 
-    private static void setBadgeLevel (Badge badge, double score) {
+    private static void setBadgeLevel (Badge badge, double activityLevel) {
+        badge.setBadgeLevel(convertToScore(activityLevel));
+    }
+
+    //This is used to turn an activity level value (dbl) into a whole
+    //number score system
+    private static int convertToScore (double activityLevel) {
         /*
         [0] = No badge
         [0-.33] = Level 1
         [.33-.66] = Level 2
         [.66 - ?] = Level 3
         */
-        if (score <= 0.001)
-            badge.setBadgeLevel(0);
-        else if (score <= 0.33)
-            badge.setBadgeLevel(1);
-        else if (score <= 0.66)
-            badge.setBadgeLevel(2);
+        if (activityLevel <= 0.001)
+            return 0;
+        else if (activityLevel <= 0.33)
+            return 1;
+        else if (activityLevel <= 0.66)
+            return 2;
         else
-            badge.setBadgeLevel(3);
+           return 3;
     }
 
-    //Method gets all Achievements within the past 7 days of today and
-    //returns in a list
-    private static List<Achievement> getWeeksAchievements
-                                (List<Achievement> achievements, Date today) {
+    //Method gets all Achievements within the past XX ms of today and
+    //returns in a list. Useful constants are WEEK_MS and TEN_DAYS_MS
+    private static List<Achievement> getPastAchievements
+                                (List<Achievement> achievements, Date today,
+                                 long lookBackInMs) {
 
-        Date compDate = new Date(today.getTime()-WEEK_MS);
+        Date compDate = new Date(today.getTime()-lookBackInMs);
         List <Achievement> retList = new ArrayList<>();
         for (Achievement ach : achievements) {
             if ((ach.getActivityDate().compareTo(compDate) > 0) &&
@@ -99,19 +111,23 @@ public class BadgeCalculator {
     //required.
     //Note the Achievement class enforces a cap on activityValue
     //Method ALTERS parameter achievements
+    //This method calculates both an aggregate Score as well as ActivityValue
+    //Score is just aggregate muscle & minute factor for exercises, whereas
+    //activity value factors in intensity in weighting the value of the exercise
     private static List<Achievement> calculateDailyScores (List<Achievement> achievements) {
         if (achievements == null) return null;
         Date lastDate = new Date();
-        lastDate.setTime(lastDate.getTime() + WEEK_MS); //put this a week in
-        //the future to avoid matching the first activity date in the list
+        lastDate.setTime(42); //make it so lastDate won't match anything in the
+                              //first iteration of the loop below
         Achievement lastAch = new Achievement();
-        double dailyValue = 0.0;
+        double dailyValue;
         List<Achievement> newList = new ArrayList<>();
         for (Achievement ach : achievements) {
             dailyValue = ach.getScore() *
-                         1/ach.getIntensity().getDaysPerWeekRequired();
+                         1.0/ach.getIntensity().getDaysPerWeekRequired();
             if (ach.getActivityDate().getTime() == lastDate.getTime()) {
                 lastAch.setActivityValue(lastAch.getActivityValue() + dailyValue);
+                lastAch.setScore(lastAch.getScore() + ach.getScore());
                 //now that we've added the same days activity value
                 //notice how we don't add this to newList, it is effectively
                 //skipped
@@ -119,7 +135,7 @@ public class BadgeCalculator {
             else {
                 lastDate.setTime(ach.getActivityDate().getTime());
                 ach.setActivityValue(ach.getScore() *
-                                 1/ach.getIntensity().getDaysPerWeekRequired());
+                                 1.0/ach.getIntensity().getDaysPerWeekRequired());
                 lastAch = ach;
                 newList.add(ach);
             }
@@ -140,11 +156,40 @@ public class BadgeCalculator {
                                 (List<Achievement> achievements, Date today,
                                  long numWeeksPrior) {
 
-        List <Achievement> achList;
         List <Achievement> retList = new ArrayList<>();
         Date iDate = new Date(today.getTime());
         iDate.setTime(today.getTime() - (WEEK_MS * numWeeksPrior));
-        return getWeeksAchievements(achievements,iDate);
+        return getPastAchievements(achievements,iDate, WEEK_MS);
    }
+
+    /**
+     * Calculates a List of ints which are the scores for the last 10 days
+     * (ie, the past 9 days plus today)
+     * @param achievements [the achievements history you want searched]
+     * @param today [today's date; use this to pull different 10 day chunks]
+     *              [if null, this will default to NOW]
+     * @return a sublist with the scores of the last 10 days of combined
+     *    achievements, meaning multiple activities on one day are
+     *    combined into one score.  Scores are returned where the first
+     *    item is the list is the most recent, and the last is 9 days ago.
+     */
+public static List<Integer>
+        getTenDaysOfScores (List<Achievement> achievements, Date today) {
+        if (today == null) today = new Date();
+        //convert date to simple MM/DD/YYYY format so it is aligned to the DAY
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        today = new Date(sdf.format(today));
+        List <Achievement> achList = getPastAchievements(achievements,today,
+                                                          TEN_DAYS_MS);
+        List <Integer> scores = new ArrayList<>();
+        //initialize the array with zeros
+        for (int i = 0; i < 10; i++) scores.add(0);
+        for (Achievement ach : achList) {
+            long diff = today.getTime() - ach.getActivityDate().getTime();
+            int numDays = (int)(diff/ONE_DAY_MS);
+            scores.set(numDays, convertToScore(ach.getActivityValue()));
+        }
+        return scores;
+        }
 
 }

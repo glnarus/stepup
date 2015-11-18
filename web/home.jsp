@@ -35,7 +35,18 @@
                 <option value="Yoga">Yoga</option>                                                                                    
             </select>            
             <table id="formtable">
-                <tr><td>Date Accomplished:</td><td><input value="${bean.dateActivity}" type="date" name="dateactivity" placeholder="MM/DD/YYYY"></td></tr>
+                <tr><td>Date Accomplished:</td>
+                <c:choose>
+                    <c:when test="${bean ne null}">
+                        <td><input value="${bean.dateActivity}" type="date" 
+                                   name="dateactivity" </td></tr>
+                    </c:when>
+                    <c:otherwise>
+                        <td><input value="${todaysdate}" type="date" 
+                                   name="dateactivity"></td></tr>
+                    </c:otherwise>
+                </c:choose>                         
+                    
                 <tr><td>Duration (minutes):</td><td><input value="${bean.minutes}" type="number" name="minutes" placeholder="how long in minutes?"/></td></tr>
                 <tr><td><select value="${bean.intensity}" name="intensity" form="achievementform">
                             <option value="Light">Light</option>
@@ -55,6 +66,22 @@
         <h2> Achievement Log </h2>
             <c:forEach var="achievement" items="${achievements}">
                 ${achievement.user}: ${achievement}<br>
-            </c:forEach>        
+            </c:forEach>   
+            <h2>Your Activity Trend</h2>
+            <c:forEach var="score" items="${tendaysscores}">
+                <c:choose>
+                    <c:when test="${score == 0}">
+                        <img src="images/bar2_level0.png" style="width:10px;height:20px;">
+                    </c:when>
+                    <c:when test="${score == 1}">
+                        <img src="images/bar2_level1.png" style="width:10px;height:20px;">
+                    </c:when>                        
+                    <c:when test="${score == 2}">
+                        <img src="images/bar2_full.png" style="width:10px;height:20px;">
+                    </c:when>                        
+                    <c:otherwise>
+                    </c:otherwise>
+                </c:choose>                  
+            </c:forEach>                                  
     </body>    
 </html>

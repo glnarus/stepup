@@ -28,7 +28,7 @@ CREATE TABLE Profiles (
     firstname VARCHAR(20) NOT NULL,
     lastname VARCHAR(30) NOT NULL,
     email VARCHAR(100),
-    phone CHAR(10),
+    phone CHAR(12),
     userid INT NOT NULL,
     goal VARCHAR(200),
     reward VARCHAR(200),
@@ -109,9 +109,9 @@ UPDATE USERS SET profileId=2 WHERE id=2;
 UPDATE USERS SET profileId=3 WHERE id=3;
 
 INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred) VALUES
-    ('Running', 45, 'Strenuous', 33.3, 'Really hard today, very warm',1,'2012-07-04'),
-    ('Walking', 120, 'Light', 30.5, 'Looking for a banana',2,'2013-09-04'),
-    ('Yoga', 20, 'Moderate', 10.3, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
+    ('Running', 45, 'Strenuous', 0.33, 'Really hard today, very warm',1,'2012-07-04'),
+    ('Walking', 120, 'Light', 0.5, 'Looking for a banana',2,'2013-09-04'),
+    ('Yoga', 20, 'Moderate', 0.3, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
 
 INSERT INTO Posts (content, authorid, postdate) VALUES
     ('I''m super tired of exercising!', 1, '2012-06-09'),

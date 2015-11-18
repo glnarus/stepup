@@ -7,7 +7,9 @@ package com.myurlname.stepup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -96,6 +98,12 @@ public class FrontController extends HttpServlet {
                 List<Achievement> achievements =
                                             db.getAchievementsByDate(username);
                 request.getSession().setAttribute("achievements", achievements);
+                List <Integer> scores = BadgeCalculator.
+                                            getTenDaysOfScores(achievements, null);
+                Collections.reverse(scores);
+                request.getSession().setAttribute("tendaysscores",scores);
+                //attach the current date as default
+                attachCurrentDate(request);
                 return "home";
             }
         } else {
@@ -103,6 +111,11 @@ public class FrontController extends HttpServlet {
                                  "Please follow username and password rules");
             return "login";
         }
+    }
+
+    private void attachCurrentDate (HttpServletRequest request) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        request.setAttribute("todaysdate", sdf.format(new Date()));
     }
 
     private String register (HttpServletRequest request) {
@@ -330,7 +343,11 @@ public class FrontController extends HttpServlet {
     private String home (HttpServletRequest request) {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null) return "login";
-        if (request.getMethod().equals("GET")) return "home";
+        if (request.getMethod().equals("GET")) {
+            //attach the default date if it is needed
+            attachCurrentDate(request);
+            return "home";
+        }
         //assumes a POST with a logged in user (meaning an achievement logged)
         String activity = request.getParameter("activity");
         String intensity = request.getParameter("intensity");
@@ -365,6 +382,11 @@ public class FrontController extends HttpServlet {
                 request.setAttribute("bean", bean);
             }
             request.getSession().setAttribute("achievements", achievements);
+            List <Integer> scores = BadgeCalculator.
+                                        getTenDaysOfScores(achievements, null);
+            Collections.reverse(scores);
+            request.getSession().setAttribute("tendaysscores",scores);
+            attachCurrentDate(request);
             return "home";
         }
         else {

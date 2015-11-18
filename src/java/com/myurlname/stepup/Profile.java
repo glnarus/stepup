@@ -128,18 +128,18 @@ public class Profile implements Serializable {
 
             if ((!LoginBean.validatePassword(password1))
                 || (!password1.equals(password2)))
-                    setErrorMessage(getErrorMessage() + "password");
+                    setErrorMessage(this.errorMessage + "password");
         }
         if (firstName != null) {
             firstName = firstName.trim();
         }
         if ((firstName == null) || (!firstName.matches("^[A-Za-z. -]{1,20}$")))
-            setErrorMessage(getErrorMessage() + "firstname");
+            setErrorMessage(this.errorMessage + "firstname");
         if (lastName != null) {
             lastName = lastName.trim();
         }
         if ((lastName == null) || (!lastName.matches("^[A-Za-z -']{1,30}$")))
-            setErrorMessage(getErrorMessage() + "lasttname");
+            setErrorMessage(this.errorMessage + "lasttname");
 
         if (email != null) {
             email = email.trim();
@@ -147,21 +147,31 @@ public class Profile implements Serializable {
         if ((email != null) && (email.length()>0)) {
             EmailValidator ev = EmailValidator.getInstance(false);
             if (!ev.isValid (email))
-                setErrorMessage(getErrorMessage() + "email");
+                setErrorMessage(this.errorMessage + "email");
         }
         if (phone != null) {
             phone = phone.trim();
         }
         if ((phone != null) && (phone.length()>0)) {
-            if (!phone.matches("^\\d{3}-\\d{3}-\\d{4}$"))
-                setErrorMessage(getErrorMessage()+ "phone");
+            if (phone.matches("^\\d{3}-\\d{3}-\\d{4}$")) {
+                //this is the format we want, leave it alone
+            }
+            else if (phone.matches("^\\d{10}$")) {
+                //these are just digits, let's insert the dashes
+                phone = String.format("%s-%s-%s",
+                                       phone.substring(0,3),
+                                       phone.substring(3,6),
+                                       phone.substring(6,10));               
+            }
+            else
+                setErrorMessage(this.errorMessage+ "phone");
         }
         if (goal != null) {
             goal = goal.trim();
         }
         if ((goal != null) && (goal.length()>0)) {
             if (goal.length()>200)
-                setErrorMessage(getErrorMessage()+ "goal");
+                setErrorMessage(this.errorMessage+ "goal");
             else {
                 goal = StringEscapeUtils.escapeHtml4(goal);
                 goal = goal.replace("'", "&#39;");
@@ -172,7 +182,7 @@ public class Profile implements Serializable {
         }
         if ((reward != null) && (reward.length()>0)) {
             if (reward.length() > 200)
-                setErrorMessage(getErrorMessage()+ "reward");
+                setErrorMessage(this.errorMessage+ "reward");
             else {
                 reward = StringEscapeUtils.escapeHtml4(reward);
                 reward = reward.replace("'", "&#39;");
@@ -280,7 +290,20 @@ public class Profile implements Serializable {
     }
 
     public String getErrorMessage() {
-        return errorMessage;
+        //return a human readable version of the error
+        String text = "Problems with the ";
+        if (errorMessage == null) return null;
+        if (errorMessage.contains("username")) text += "username field";
+        else if (errorMessage.contains("password")) text += "password";
+        else if (errorMessage.contains("firstname")) text += "first name";
+        else if (errorMessage.contains("lastname")) text += "lastname";
+        else if (errorMessage.contains("email")) text += "email";
+        else if (errorMessage.contains("phone")) text += "phone";
+        else if (errorMessage.contains("goal")) text += "goal";
+        else if (errorMessage.contains("reward")) text += "reward";
+        else
+            return null;
+        return text;
     }
 
     public void setErrorMessage(String errorMessage) {
