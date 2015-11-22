@@ -13,16 +13,17 @@
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>
     </head>
     <body>
-        <h1>Log in to StepUp&trade;</h1>
+        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
+        <h1>Log in to Step Up&trade;</h1>
         <h2 class="flash">${flash}</h2>
         <form method="POST" action="stepup">
             <input type="hidden" name="action" value="login"/>
-            <table id="formtable">
-                <tr><td>username:</td><td><input type="text" 
+            <table id="logintable">
+                <tr><td>username:</td><td><input id="roundinput" type="text" 
                                                  name="username"/></td></tr>
-                <tr><td>password:</td><td><input type="password" 
+                <tr><td>password:</td><td><input id="roundinput" type="password" 
                                                  name="password"/></td></tr>
-                <tr><td colspan="2"><input type="submit" 
+                <tr><td colspan="2"><input id="roundinput" type="submit" 
                                            value="Log in!"/></td></tr>
             </table>
         </form>

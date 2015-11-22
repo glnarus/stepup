@@ -1,4 +1,120 @@
 
-#formtable {border-collapse: collapse;}
-#formtable td {border: 1px solid #93c4be; padding: 8px; margin: 8px;}
-.flash {color: red;}
+/*Sets up background image */
+body {    
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  }
+
+/*For the copyright text at the bottom,
+set to position fixed otherwise it doesn't
+appear at the bottom if there are scrollbars*/
+div.footer {
+  position: fixed;
+  right: 10px;
+  bottom: 0px;
+  font-weight:bold;
+  font-family: courier, monospace;
+  font-size: 80%;
+}
+
+div.scrollbox {
+    height: 100px;
+    width: 100%;
+    overflow: auto;
+    padding: 10px;    
+    border: 2px solid;
+    border-radius: 6px;
+}
+
+div.scrollboxBig {
+    height: 250px;
+    width: 100%;
+    overflow: auto;
+    padding: 10px;    
+    border: 2px solid;
+    border-radius: 6px;
+}
+
+#formtable {border-collapse: collapse;
+            }
+#formtable td {border: 0px;
+              padding: 6px; margin: 6px;          
+             }
+             
+#logintable {border-collapse: collapse;
+            }
+#logintable td {border: 0px;
+              padding: 6px; margin: 6px;              
+             }
+#roundinput {
+border-radius: 6px;
+border: 1px solid #7092BF;    
+font-family: "Comic Sans MS", cursive, sans-serif;
+font-size: 80%;
+color: black;
+font-weight: bold;
+padding-left : 8px;
+}
+
+#username {
+    text-decoration:underline;
+    
+    
+}
+
+#squareinput {
+border: 1px solid #7092BF;    
+font-family: "Comic Sans MS", cursive, sans-serif;
+font-size: 80%;
+color: black;
+font-weight: bold;
+}
+
+fieldset{display:inline;
+border: 2px solid;
+border-radius: 20px;
+}
+             
+.flash {color: red; font-size: 80%;}
+
+#imagelogo {border:5px solid white;}
+
+h1  { font-family: "Comic Sans MS", cursive, sans-serif;
+      font-size: 175%;
+      color: #7092BF;
+      white-space: nowrap;
+    }
+    
+body { background-color: white;
+       margin-left:3em;
+       margin-right: 5em;
+       margin-top: 50px;
+       font-family: "Comic Sans MS", cursive, sans-serif;
+       font-size: 80%;
+       color: #7092BF;       
+       margin-bottom: 5em;
+     }    
+     
+/* Set link colors for visited, mouse over, active, etc
+Apparently, ordering is very important here! */
+/*Unvisited link*/
+a:link {
+  color: #6086b8;
+  font-size: 80%;
+}
+
+a:visited {
+  color: #4f79b0;
+  font-size: 80%;
+}
+
+a:hover {
+  color: #a7bdd7;
+  font-size: 80%;
+}
+
+a:active {
+  color: #476d9f;
+  font-size: 80%;
+}     

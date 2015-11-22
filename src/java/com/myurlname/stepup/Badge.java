@@ -8,11 +8,11 @@ import java.io.Serializable;
  * @author gabriel
  */
 public class Badge implements Serializable {
-    private int badgeLevel; //Rabbit(1), Mountain Goat(2), Kangaroo(3)
-    private int badgeHabit; //Baby(1), Kid(2), Star(3)
-    public final static String [] LEVELS = {"No Badge", "Rabbit", "Goat",
+    private int badgeLevel; //1, 2, or 3
+    private int badgeHabit; //1,2, 3
+    public final static String [] LEVELS = {"No Badge", "Grasshopped", "Rabbit",
                                                             "Kangaroo"};
-    public final static String [] HABITS = {"Idle", "Baby", "Kid", "Star"};
+    public final static String [] HABITS = {"Idle", "Bronze", "Silver", "Gold"};
     public final static int LOWEST_LEVEL = 0;
     public final static int LOWEST_HABIT = 0;
 

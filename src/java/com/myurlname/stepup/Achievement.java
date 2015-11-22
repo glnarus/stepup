@@ -25,14 +25,23 @@ public class Achievement implements Serializable {
     private static final double CAP = 1.252;
     private static final double MAX_DAILY_VALUE = 0.3334;
 
+    /**Caution: This constructor is only used from the database
+     * and thus does NOT have any character escapes because data in the
+     * database is already deemed safe.  ONLY call this from the StepUpDAO
+     * object (ie, database).
+     * @param activity
+     * @param minutes
+     * @param intensity
+     * @param score
+     * @param notes
+     * @param activityDate
+     * @param recordedDate
+     */
     public Achievement (Activity activity, int minutes, Intensity intensity,
                         double score, String notes, Date activityDate,
                                                           Date recordedDate) {
 
-        if (notes != null) {
-            notes = StringEscapeUtils.escapeHtml4(notes);
-            this.notes = notes.replace("'", "&#39;");
-        }
+        this.notes = notes;
         this.activityDate = activityDate;
         this.recordedDate = recordedDate;
         this.minutes = minutes;

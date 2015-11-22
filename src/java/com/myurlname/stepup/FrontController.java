@@ -98,10 +98,10 @@ public class FrontController extends HttpServlet {
                 List<Achievement> achievements =
                                             db.getAchievementsByDate(username);
                 request.getSession().setAttribute("achievements", achievements);
-                List <Integer> scores = BadgeCalculator.
-                                            getTenDaysOfScores(achievements, null);
-                Collections.reverse(scores);
-                request.getSession().setAttribute("tendaysscores",scores);
+            List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
+                                                            achievements, null);
+            Collections.reverse(SixWeeksScores);
+            request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
                 //attach the current date as default
                 attachCurrentDate(request);
                 return "home";
@@ -382,10 +382,10 @@ public class FrontController extends HttpServlet {
                 request.setAttribute("bean", bean);
             }
             request.getSession().setAttribute("achievements", achievements);
-            List <Integer> scores = BadgeCalculator.
-                                        getTenDaysOfScores(achievements, null);
-            Collections.reverse(scores);
-            request.getSession().setAttribute("tendaysscores",scores);
+            List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
+                                                            achievements, null);
+            Collections.reverse(SixWeeksScores);
+            request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
             attachCurrentDate(request);
             return "home";
         }

@@ -22,9 +22,33 @@ public class BadgeCalculator {
     private final static long ONE_DAY_MS = 86400000L;
 
     public static Badge calculateBadge (List<Achievement> achievements, Date today) {
+        Badge badges [] = calculateLastSixWeeksBadges (achievements, today);
+        //now iterate through the past six weeks and figure out the habit
+        int lowestLevel = Integer.MAX_VALUE;
+        for (int i = 0; i < badges.length; i ++) {
+           if (badges[i].getBadgeLevel() < lowestLevel)
+               lowestLevel = badges[i].getBadgeLevel();
+
+        }
+        badges[0].setBadgeHabit(lowestLevel);
+        return badges[0];
+    }
+
+    public static List<Integer>
+        getSixWeeksHistory (List<Achievement> achievements, Date today) {
+        Badge badges [] = calculateLastSixWeeksBadges (achievements, today);
+        List <Integer> scoreHistory = new ArrayList<>();
+        for (Badge b : badges) {
+            scoreHistory.add(b.getBadgeLevel());
+        }
+        return scoreHistory;
+    }
+
+    public static Badge[] calculateLastSixWeeksBadges (List<Achievement> achievements, Date today) {
         //badge level corresponds to only this past week.
         //badge habit corresponds to last six weeks.
         List<Achievement> weekAchv;
+        if (today == null) today = new Date();
         Badge badges [] = new Badge [6];
         for (int i = 0; i < badges.length; i ++)
             badges[i] = new Badge();
@@ -51,16 +75,7 @@ public class BadgeCalculator {
                 //habit
             }
         }
-
-        //now iterate through the past six weeks and figure out the habit
-        int lowestLevel = Integer.MAX_VALUE;
-        for (int i = 0; i < badges.length; i ++) {
-           if (badges[i].getBadgeLevel() < lowestLevel)
-               lowestLevel = badges[i].getBadgeLevel();
-
-        }
-        badges[0].setBadgeHabit(lowestLevel);
-        return badges[0];
+        return badges;
     }
 
     private static void setBadgeLevel (Badge badge, double activityLevel) {

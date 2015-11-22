@@ -115,6 +115,6 @@ INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, d
 
 INSERT INTO Posts (content, authorid, postdate) VALUES
     ('I''m super tired of exercising!', 1, '2012-06-09'),
-    ('Suck it up biotch!', 3, '2013-01-16'),
-    ('Anybody lonely tonight?', 2, '2013-10-31');
+    ('Suck it up and get out there!', 3, '2013-01-16'),
+    ('Anybody want to run at brushy creek tomorrow?', 2, '2013-10-31');
 

@@ -43,7 +43,7 @@ public class Post implements java.io.Serializable {
     */
     public Post(String content, Date postDate, String username, int userId, int id) {
         this.content = content;
-        this.postDate = new Date ();
+        this.postDate = postDate;
         this.username = username;
         this.userId = userId;
         this.id = id;

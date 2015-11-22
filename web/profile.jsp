@@ -6,13 +6,40 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>StepUp -- Profile for ${user}</title>
-        <link rel="stylesheet" type="text/css" href="stepup.css"/>
+        <link rel="stylesheet" type="text/css" href="StepUp.css"/>     
     </head>
-    <body>
+    <c:choose>
+       <c:when test="${subject.badge.badgeLevel == 1}">
+           <body background="images/grasshopper_large_bk.jpg">
+       </c:when>
+       <c:when test="${subject.badge.badgeLevel == 2}">
+           <body background="images/rabbit_large_bk.jpg">
+       </c:when>   
+       <c:when test="${subject.badge.badgeLevel == 3}">
+           <body background="images/kangaroo_large_bk.jpg">
+       </c:when>               
+       <c:otherwise>
+           <body>
+       </c:otherwise>
+   </c:choose> 
         <h1>${subject}'s Profile</h1>
         <h2 class="flash">${flash}</h2>
-        <p>Badge:&nbsp;${subject.badge.badgeHabitName}&nbsp;
-                                          ${subject.badge.badgeLevelName}</p>
+        <p>Fitness Habit
+            <c:choose>
+               <c:when test="${subject.badge.badgeHabit == 1}">
+                       <img src="images/bronze_star_home.jpg">
+               </c:when>
+               <c:when test="${subject.badge.badgeHabit == 2}">
+                       <img src="images/silver_star_home.jpg">
+               </c:when> 
+               <c:when test="${subject.badge.badgeHabit == 3}"> 
+                       <img src="images/gold_star_home.jpg">
+               </c:when>           
+               <c:otherwise>                   
+               </c:otherwise>
+           </c:choose>           
+        
+        </p>
         <p>Name:&nbsp;${profile.firstName}&nbsp;${profile.lastName}</p>
         <p>Member since:&nbsp;${profile.prettyPrintJoinDate}</p>
         <p>Fitness Goal:&nbsp;${profile.goal}</p>

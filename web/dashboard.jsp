@@ -12,6 +12,7 @@
         <h1>StepUp Community Dashboard</h1>
         <h2 class="flash">${flash}</h2>
         <h2>Activity Stream</h2>
+        <div class="scrollboxBig">
         <c:forEach var="achievement" items="${achievements}">
             <a href="stepup?action=profile&profilefor=${achievement.user}">
                                                         ${achievement.user} 
@@ -22,6 +23,7 @@
                         [<i>${achievement.notes}</i>]</c:if>
             <br>                                   
         </c:forEach>
+        </div>
 
         <h2>Shout outs!</h2>
         <h3>Post to the group wall!</h3>
@@ -35,13 +37,14 @@
                                            value="Post it!"/></td></tr>
             </table>
         </form>        
-        <br>
+        <div class="scrollbox">
         <c:forEach var="post" items="${posts}">
             [${post.prettyPrintPostDate}]&nbsp;
             <a href="stepup?action=profile&profilefor=${post.username}">
                                                         ${post.username} 
             </a>->&nbsp;&nbsp;${post.content}<br>                                   
-        </c:forEach>            
+        </c:forEach>   
+        </div>
         <p> <a href="stepup?action=home">Home</a>
             <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |              
             <a href="stepup?action=logout">Logout</a>
