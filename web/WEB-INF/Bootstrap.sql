@@ -24,7 +24,7 @@ CREATE TABLE Users (
 
 --create profiles second, then after created put the key in the user dbase row
 CREATE TABLE Profiles (
-    joindate DATE DEFAULT CURRENT_DATE,
+    joindate BIGINT NOT NULL,  --SQL date is banned because it ignores hours, minutes, seconds
     firstname VARCHAR(20) NOT NULL,
     lastname VARCHAR(30) NOT NULL,
     email VARCHAR(100),
@@ -71,8 +71,8 @@ CREATE TABLE Achievements (
     score DOUBLE NOT NULL,
     notes VARCHAR (200),
     userid INT NOT NULL,
-    dateoccurred DATE NOT NULL,
-    daterecorded DATE DEFAULT CURRENT_DATE,
+    dateoccurred BIGINT NOT NULL,
+    daterecorded BIGINT NOT NULL,
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
@@ -84,7 +84,7 @@ References GNARUS.Users(id);
 CREATE TABLE Posts (
     content VARCHAR(280) NOT NULL,
     authorid INT NOT NULL,
-    postdate DATE DEFAULT CURRENT_DATE,
+    postdate BIGINT NOT NULL,
     id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
@@ -100,21 +100,21 @@ INSERT INTO Users (username, password, badgelevel, badgehabit) VALUES
     ('monkeyman', 'banana',0,0);
 
 INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
-    ('2012-06-09', 'John', 'Doe', 'jd@example.com',1),
-    ('2013-10-31', 'Jill', 'Jack', 'jj@nowhere.com',2),
-    ('2013-01-15', 'Curious', 'George', 'monkey@tree.net',3);
+    (1339200000000, 'John', 'Doe', 'jd@example.com',1),
+    (1383177600000, 'Jill', 'Jack', 'jj@nowhere.com',2),
+    (1358208000000, 'Curious', 'George', 'monkey@tree.net',3);
 
 UPDATE USERS SET profileId=1 WHERE id=1;
 UPDATE USERS SET profileId=2 WHERE id=2;
 UPDATE USERS SET profileId=3 WHERE id=3;
 
-INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred) VALUES
-    ('Running', 45, 'Strenuous', 0.33, 'Really hard today, very warm',1,'2012-07-04'),
-    ('Walking', 120, 'Light', 0.5, 'Looking for a banana',2,'2013-09-04'),
-    ('Yoga', 20, 'Moderate', 0.3, 'Hit up the hot yoga and sweated a ton!',3,'2014-11-04');
+INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred, daterecorded) VALUES
+    ('Running', 45, 'Strenuous', 0.33, 'Really hard today, very warm',1,1341360000000,1341360000000),
+    ('Walking', 120, 'Light', 0.5, 'Looking for a banana',2,1378252800000,1378252800000),
+    ('Yoga', 20, 'Moderate', 0.3, 'Hit up the hot yoga and sweated a ton!',3,1397174400000,1397174400000);
 
 INSERT INTO Posts (content, authorid, postdate) VALUES
-    ('I''m super tired of exercising!', 1, '2012-06-09'),
-    ('Suck it up and get out there!', 3, '2013-01-16'),
-    ('Anybody want to run at brushy creek tomorrow?', 2, '2013-10-31');
+    ('I''m super tired of exercising!', 1, 1339200000000),
+    ('Suck it up and get out there!', 3, 1358294400000),
+    ('Anybody want to run at brushy creek tomorrow?', 2, 1383177600000);
 

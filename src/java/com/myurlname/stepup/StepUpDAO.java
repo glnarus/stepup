@@ -86,7 +86,7 @@ public class StepUpDAO {
     public User register(Profile p) {
     String userSql = "INSERT INTO USERS (username,password) VALUES (?,?)";
     String profSql = "INSERT INTO PROFILES (firstname,lastname,";
-    profSql += "email,phone,userid,goal,reward) VALUES (?,?,?,?,?,?,?)";
+    profSql += "email,phone,userid,goal,reward,joindate) VALUES (?,?,?,?,?,?,?,?)";
     String updateSql = "UPDATE Users SET profileid = ? WHERE id = ?";
     PreparedStatement pstatUser = null, pstatProf = null, pstatUpdate = null;
     ResultSet userRs = null, profRs = null;
@@ -113,6 +113,7 @@ public class StepUpDAO {
         pstatProf.setInt(5, userId);
         pstatProf.setString(6, p.getGoal());
         pstatProf.setString(7, p.getReward());
+        pstatProf.setLong(8, new Date().getTime());
         pstatProf.executeUpdate();
 
         profRs = pstatProf.getGeneratedKeys();
@@ -168,7 +169,7 @@ public class StepUpDAO {
                                        rsData.getString("reward"),
                                        rsData.getString("emailsubscribe"),
                                        rsData.getString("textsubscribe"),
-                          new Date(rsData.getDate("joindate").getTime()));
+                          new Date(rsData.getLong("joindate")));
                 profile.setProfileId(rsData.getInt("id"));
             }
             else
@@ -192,8 +193,8 @@ public class StepUpDAO {
      */
     public int addAchievement (Achievement achievement) {
         String sql = "INSERT INTO ACHIEVEMENTS (exercise,duration,";
-        sql += "intensity, score, notes,userid,dateoccurred) ";
-        sql += "VALUES (?,?,?,?,?,?,?)";
+        sql += "intensity, score, notes,userid,dateoccurred,daterecorded) ";
+        sql += "VALUES (?,?,?,?,?,?,?,?)";
         PreparedStatement pstat = null;
         ResultSet rs = null;
         int achievementId = -1;
@@ -209,7 +210,8 @@ public class StepUpDAO {
             pstat.setDouble(4, achievement.getScore());
             pstat.setString(5, achievement.getNotes());
             pstat.setInt(6, achievement.getUser().getUserId());
-            pstat.setDate(7, new java.sql.Date (achievement.getActivityDate().getTime()));
+            pstat.setLong(7, achievement.getActivityDate().getTime());
+            pstat.setLong(8, new Date().getTime());
             pstat.executeUpdate();
             rs = pstat.getGeneratedKeys();
             if (rs.next()) {
@@ -275,7 +277,7 @@ public class StepUpDAO {
             pstat = CONN.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
             pstat.setString(1,post.getContent());
             pstat.setInt(2, post.getUserId());
-            pstat.setDate(3, new java.sql.Date(post.getPostDate().getTime()));
+            pstat.setLong(3, post.getPostDate().getTime());
             pstat.executeUpdate();
             rs = pstat.getGeneratedKeys();
             if (rs.next()) {
@@ -419,8 +421,8 @@ public class StepUpDAO {
                 String intensity = rs.getString("intensity");
                 double score = rs.getDouble("score");
                 String notes = rs.getString("notes");
-                Date dateOccurred = new Date(rs.getDate("dateoccurred").getTime());
-                Date dateRecorded = new Date(rs.getDate("daterecorded").getTime());
+                Date dateOccurred = new Date(rs.getLong("dateoccurred"));
+                Date dateRecorded = new Date(rs.getLong("daterecorded"));
 
                 Activity objActivity = new Activity (exercise);
                 Intensity objIntensity = new Intensity (intensity);
@@ -471,7 +473,7 @@ public class StepUpDAO {
             while (rs.next()) {
                 String content = rs.getString("content");
                 int authorId = rs.getInt("authorid");
-                Date postDate = new Date(rs.getDate("postdate").getTime());
+                Date postDate = new Date(rs.getLong("postdate"));
                 int postId = rs.getInt("id");
                 String authorName = rs.getString("username");
                 Post post = new Post (content, postDate, authorName, authorId,
