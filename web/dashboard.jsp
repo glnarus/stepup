@@ -5,11 +5,12 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>StepUp - Dashboard</title>
+        <title>StepUp&trade; - Dashboard</title>
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>        
     </head>
     <body>
-        <h1>StepUp Community Dashboard</h1>
+        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
+        <h1>StepUp&trade; Community Dashboard</h1>
         <h2 class="flash">${flash}</h2>
         <h2>Activity Stream</h2>
         <div class="scrollboxBig">
@@ -26,17 +27,6 @@
         </div>
 
         <h2>Shout outs!</h2>
-        <h3>Post to the group wall!</h3>
-        <form method="POST" action="stepup">
-            <input type="hidden" name="action" value="dashboard"/>
-            <table>
-                <tr><td><input type="text" size="80" maxlength="280"
-                               placeholder="What would you like to say?" 
-                               name="content"/></td></tr>                
-                <tr><td colspan="2"><input type="submit" 
-                                           value="Post it!"/></td></tr>
-            </table>
-        </form>        
         <div class="scrollbox">
         <c:forEach var="post" items="${posts}">
             [${post.prettyPrintPostDate}]&nbsp;
@@ -45,6 +35,17 @@
             </a>->&nbsp;&nbsp;${post.content}<br>                                   
         </c:forEach>   
         </div>
+        <form method="POST" action="stepup">
+            <input type="hidden" name="action" value="dashboard"/>
+            <table>
+                <tr><td><input type="text" size="190" maxlength="280" id="postinput" 
+                               placeholder="What would you like to say?" 
+                               name="content"/></td></tr>                
+                <tr><td colspan="2"><input type="submit" id="roundinput" 
+                                           value="Post it!"/></td></tr>
+            </table>
+        </form>        
+        
         <p> <a href="stepup?action=home">Home</a>
             <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |              
             <a href="stepup?action=logout">Logout</a>

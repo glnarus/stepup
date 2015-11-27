@@ -15,7 +15,12 @@ div.footer {
   bottom: 0px;
   font-weight:bold;
   font-family: courier, monospace;
-  font-size: 80%;
+  font-size: 60%;
+  color: dark gray;
+}
+
+div.smalltext {
+    font-size: 80%;
 }
 
 div.scrollbox {
@@ -25,6 +30,11 @@ div.scrollbox {
     padding: 10px;    
     border: 2px solid;
     border-radius: 6px;
+}
+
+
+div.legend {
+    font-size: 60%;
 }
 
 div.scrollboxBig {
@@ -48,6 +58,19 @@ div.scrollboxBig {
               padding: 6px; margin: 6px;              
              }
 #roundinput {
+border-radius: 6px;
+border: 1px solid #7092BF;    
+font-family: "Comic Sans MS", cursive, sans-serif;
+font-size: 80%;
+color: black;
+font-weight: bold;
+padding-left : 8px;
+}
+
+#postinput {
+height: 20px;
+width: 100%;
+overflow: auto;    
 border-radius: 6px;
 border: 1px solid #7092BF;    
 font-family: "Comic Sans MS", cursive, sans-serif;

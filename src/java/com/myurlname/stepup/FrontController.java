@@ -256,6 +256,13 @@ public class FrontController extends HttpServlet {
             request.setAttribute("flash",db.getLastError());
             return "profile";
         }
+
+        List achievements = db.getAchievementsByDate(subject.getUsername());
+        if (achievements == null)  {
+            request.setAttribute ("flash",db.getLastError());
+            return "profile";
+        }
+        request.getSession().setAttribute("subjectachievements", achievements);
         if (user.getUserId() == subject.getUserId())
             user.setProfile(profile);
         request.getSession().setAttribute("profile", profile);

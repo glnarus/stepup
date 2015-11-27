@@ -9,7 +9,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>StepUp - Home</title>
+        <title>StepUp&trade; - Home</title>
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>        
     </head>
     
@@ -28,7 +28,7 @@
        </c:otherwise>
    </c:choose>     
     
-        
+        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1>Welcome back <u>${user.username}</u>!</h1>
  
             <c:choose>
@@ -116,25 +116,58 @@
             </c:forEach>   
         </div>                
             <h4>Star Progress Last 6 Weeks</h4>
+            <table id="formtable">               
+                <tr><td>
+                    <div class="legend">
+                        Hard/Strenuous<br>
+                        Moderate<br>
+                        Light<br>
+                    </div>
+                    </td>
+                  
             <c:forEach var="score" items="${sixweeksscores}">
+                <td>
                 <c:choose>
                     <c:when test="${score == 0}">
-                        <img src="images/bar3_level0.png" style="width:10px;height:20px;">
+                        <img src="images/bar3_level0.png" style="width:10px;height:30px;">
                     </c:when>
                     <c:when test="${score == 1}">
-                        <img src="images/bar3_level1.png" style="width:10px;height:20px;">
+                        <img src="images/bar3_level1.png" style="width:10px;height:30px;">
                     </c:when>                        
                     <c:when test="${score == 2}">
-                        <img src="images/bar3_level2.png" style="width:10px;height:20px;">
+                        <img src="images/bar3_level2.png" style="width:10px;height:30px;">
                     </c:when>     
                     <c:when test="${score == 3}">
-                        <img src="images/bar3_level3.png" style="width:10px;height:20px;">
+                        <img src="images/bar3_level3.png" style="width:10px;height:30px;">
                     </c:when>                            
                     <c:otherwise>
                     </c:otherwise>
                 </c:choose>                  
+                </td>               
             </c:forEach>  
-        <div id="footer">
+                </tr>
+            </table>            
+            <div class="smalltext">
+                Six weeks in a row of activity earns a star.<br>
+                Bronze, Silver, or Gold stars awarded based on lowest activity level in prior six weeks.
+                <br>
+                Current week activity level is indicated by background animal:
+                <ul>
+                    <li><i>None</i>: no activity this week</li>
+                    <li><i>Grasshopper</i>: Beginner level.</li>
+                    <li><i>Rabbit</i>: Intermediate level</li>
+                    <li><i>Kangaroo</i>: Meets or exceeds federal guidelines!</li>                       
+                </ul>
+            </div>
+                <div class="legend">
+                StepUp&trade; compares against federal guidelines of 5 times per
+                week of light/moderate exercise or 3 times per week of 
+                hard/strenuous exercise.<br>Multiple activities per day are 
+                automatically combined for you.<br>Activities themselves are also
+                weighted differently; for example Running for 10 minutes is 
+                worth 25 minutes of Walking.
+                </div>
+        <div class="footer">
         Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
         </div>
     </body>    

@@ -9,12 +9,12 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>StepUp - Login</title>
+        <title>StepUp&trade; - Login</title>
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>
     </head>
     <body>
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
-        <h1>Log in to Step Up&trade;</h1>
+        <h1>Log in to StepUp&trade;</h1>
         <h2 class="flash">${flash}</h2>
         <form method="POST" action="stepup">
             <input type="hidden" name="action" value="login"/>

@@ -5,7 +5,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>StepUp -- Profile for ${user}</title>
+        <title>StepUp&trade; -- Profile for ${user}</title>
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>     
     </head>
     <c:choose>
@@ -22,7 +22,8 @@
            <body>
        </c:otherwise>
    </c:choose> 
-        <h1>${subject}'s Profile</h1>
+        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
+        <h1><u>${subject}</u>'s Profile</h1>
         <h2 class="flash">${flash}</h2>
         <p>Fitness Habit
             <c:choose>
@@ -54,7 +55,13 @@
             <c:otherwise>
                 <p><small>Contact info fields are considered private.</small>
             </c:otherwise>
-        </c:choose>        
+        </c:choose>                          
+        <h2> Achievement Log </h2>
+        <div class="scrollbox">
+            <c:forEach var="achievement" items="${subjectachievements}">
+                ${achievement.user}: ${achievement}<br>
+            </c:forEach>   
+        </div>                         
 
         
         <p> <a href="stepup?action=home">Home</a>

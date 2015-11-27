@@ -11,8 +11,7 @@ import java.util.List;
  * Has a static method accepting a list of achievements and today's date
  * From there it will look through the list of achievements and calculate
  * a Badge object to return.  Badge object reflects current week's status as
- * well as an enhancement if there has been six weeks of at least 2X per week
- * activity.
+ * well as an fitness habit indicator if there has been six weeks of activity.
  * lifetime
  * @author gabriel
  */
