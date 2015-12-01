@@ -6,7 +6,7 @@ import javax.servlet.ServletContextListener;
 
 /**
  * Web application lifecycle listener.  Utilized to initialize the DAO object
- * with a database connection.  The connection is provided via a JDBC string 
+ * with a database connection.  The connection is provided via a JDBC string
  * composed of context init parameters for easy configuration.
  *
  * @author gabriel
@@ -22,11 +22,30 @@ public class ContextListener implements ServletContextListener {
         String dbName = sc.getInitParameter("dbName");
         String dbUsername = sc.getInitParameter("dbUsername");
         String dbPassword = sc.getInitParameter("dbPassword");
-        String jdbcUrl = 
-                String.format("%s://%s:%s/%s;user=%s;password=%s", 
+        String jdbcUrl =
+                String.format("%s://%s:%s/%s;user=%s;password=%s",
                    dbProtocol, dbHost, dbPort, dbName, dbUsername, dbPassword);
         StepUpDAO db = new StepUpDAO (jdbcUrl);
         sc.setAttribute("db", db);
+        String [] activityNames = {"Ball Sports",
+                                    "Bicycling",
+                                    "Boxing",
+                                    "Calisthenics",
+                                    "Climbing",
+                                    "Dance",
+                                    "Hiking",
+                                    "Misc Cardio",
+                                    "Running",
+                                    "Swimming",
+                                    "Walking",
+                                    "Weights",
+                                    "Yoga"};
+        sc.setAttribute("activityNames",activityNames);
+        String [] intensityNames = {"Light",
+                                    "Moderate",
+                                    "Hard",
+                                    "Strenuous"};
+        sc.setAttribute("intensityNames",intensityNames);
     }
 
     @Override

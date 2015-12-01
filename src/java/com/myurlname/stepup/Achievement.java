@@ -2,6 +2,7 @@ package com.myurlname.stepup;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -39,7 +40,7 @@ public class Achievement implements Serializable {
      */
     public Achievement (Activity activity, int minutes, Intensity intensity,
                         double score, String notes, Date activityDate,
-                                                          Date recordedDate) {
+                                                   Date recordedDate, int id) {
 
         this.notes = notes;
         this.activityDate = activityDate;
@@ -48,6 +49,7 @@ public class Achievement implements Serializable {
         this.activity = activity;
         this.intensity = intensity;
         this.score = score;
+        this.achievementId = id;
     }
 
     public Achievement (AchievementBean bean) {
@@ -67,6 +69,8 @@ public class Achievement implements Serializable {
                 strDate = strDate.replace('-', '/');
                 strDate = strDate.replace('.', '/');
                 strDate = strDate.replace('\\', '/');
+                //Adapt YY to YYYY
+                strDate = convertYYtoYYYY(strDate);
                 activityDate = sdf.parse(strDate);
             }
             strDate = bean.getDateRecorded();
@@ -90,6 +94,36 @@ public class Achievement implements Serializable {
             activityDate = null;
             recordedDate = null;
         }
+    }
+
+    /*if YY or Y is marked as year, this method tests if XX00 (current year)+YY
+    * is less than or equal to the current year.  If so, replaces YY with XXYY.
+    * If not, it returns (XX00 - 100)+YY.
+    * If the year input is YYY or YYYY, it returns the input unmodified
+    * Method expects '/' is used as the delimeter
+    */
+    private String convertYYtoYYYY (String input) {
+        //step 1; parse the year
+        if (input == null) return null;
+        String [] splits = input.split("/");
+        if (splits.length != 3) return input;
+        if ((splits[2].length() != 2) && (splits[2].length() != 1))
+            return input;
+        int inputYear;
+        try { inputYear = Integer.parseInt(splits[2]);}
+        catch (NumberFormatException nfe) {return input;}
+        //get current year
+        Calendar now = Calendar.getInstance();
+        int year = now.get(Calendar.YEAR);
+        int yearInHundreds = (year / 100) * 100;
+        if ((yearInHundreds + inputYear) <= year) {
+            inputYear = yearInHundreds + inputYear;
+        }
+        else
+            inputYear = (yearInHundreds - 100) + inputYear;
+        String yearString = String.valueOf(inputYear);
+        return (splits[0] + "/" + splits[1] + "/" + yearString);
+
     }
 
     public Achievement () {
@@ -224,6 +258,12 @@ public class Achievement implements Serializable {
     public String getPrettyPrintActivityDate () {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         return sdf.format(this.activityDate);
+
+    }
+
+    public String getPrettyPrintRecordedDate () {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        return sdf.format(this.recordedDate);
 
     }
 

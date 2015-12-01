@@ -42,6 +42,10 @@ public class FrontController extends HttpServlet {
                 nextPage = home(request);
                 break;
 
+            case "editachievement":
+                nextPage = editAchievement(request);
+                break;
+
             case "profile":
                 nextPage = profile(request);
                 break;
@@ -98,12 +102,17 @@ public class FrontController extends HttpServlet {
                 List<Achievement> achievements =
                                             db.getAchievementsByDate(username);
                 request.getSession().setAttribute("achievements", achievements);
-            List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
-                                                            achievements, null);
-            Collections.reverse(SixWeeksScores);
-            request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
+                List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
+                                                                achievements, null);
+                Collections.reverse(SixWeeksScores);
+                request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
                 //attach the current date as default
                 attachCurrentDate(request);
+                //attach Activity Name and Intensity Name strings
+                request.getSession().setAttribute("activityNames",
+                        (String[])getServletContext().getAttribute("activityNames"));
+                request.getSession().setAttribute("intensityNames",
+                        (String[])getServletContext().getAttribute("intensityNames"));
                 return "home";
             }
         } else {
@@ -345,6 +354,122 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("user", userEdited);
         request.getSession().setAttribute("subject", userEdited);
         return "profile";
+    }
+
+    private String editAchievement (HttpServletRequest request) {
+        //If the achievement exists and the user is logged in, create an
+        //achievement bean and attach it to the session.
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+        int achievementId;
+        try {achievementId = Integer.parseInt(request.getParameter("id"));}
+        catch (NumberFormatException nfe) {return "home";}
+        //Now see if we can pull this achievement from the session's achievements
+        //list
+        if (request.getMethod().equals("GET")) {
+            Achievement achToEdit = (Achievement)request.getSession().
+                                                    getAttribute("achToEdit");
+            if ((achToEdit == null) ||
+                              (achToEdit.getAchievementId() != achievementId)){
+                List <Achievement> achList = (List)request.getSession().
+                                                       getAttribute("achievements");
+                if (achList == null) return "home";
+                for (Achievement ach: achList){
+                    if (ach.getAchievementId() == achievementId) {
+                        achToEdit = ach;
+                        request.getSession().setAttribute("achToEdit", ach);
+                        break;
+                    }
+                }
+                if (achToEdit == null)
+                    return "home";
+            }
+            if (request.getParameter("delete") != null) {
+                //remove the achievement
+                StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+                if (db.removeAchievement(achToEdit) == null) {
+                    request.setAttribute("flash", db.getLastError());
+                    return "editAchievement";
+                }
+                request.setAttribute("flash", "Achievement deleted successfully");
+                //re-populate achievement list
+                //Can be more efficient about the above by adding Achievement, in order
+                //here instead of calling the dbase again.
+                List achievements = db.getAchievementsByDate(user.getUsername());
+                if (achievements == null)  {
+                    request.setAttribute ("flash",db.getLastError());
+                    return "home";
+                }
+                request.getSession().setAttribute("achievements", achievements);
+                List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
+                                                                achievements, null);
+                Collections.reverse(SixWeeksScores);
+                request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
+                attachCurrentDate(request);
+                return "home";
+            }
+            AchievementBean bean = new AchievementBean(
+                   achToEdit.getActivity().toString(),
+                   achToEdit.getIntensity().toString(),
+                    String.valueOf(achToEdit.getMinutes()),
+                   achToEdit.getNotes(),achToEdit.getPrettyPrintActivityDate());
+            request.setAttribute("bean", bean);
+            return "editAchievement";
+        }
+        else if (request.getMethod().equals("POST")) {
+            //this is a POST, make a new Achievement, keeping same ID, but
+            //overwriting other fields.
+            Achievement achToEdit = (Achievement)request.getSession().
+                                                    getAttribute("achToEdit");
+            if (achToEdit == null)
+                return "home";
+
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            //Process the POST; we need to make sure everything is valid, so
+            //re-use the achievementbean
+            String activity = request.getParameter("activity");
+            String intensity = request.getParameter("intensity");
+            String minutes = request.getParameter("minutes");
+            String notes = request.getParameter("notes");
+            String dateActivity = request.getParameter("dateactivity");
+            AchievementBean bean = new AchievementBean (activity, intensity,
+                minutes, notes, dateActivity, achToEdit.getPrettyPrintRecordedDate());
+
+            Achievement modAch = new Achievement (bean);
+            //above line will also set an updated score
+            modAch.setAchievementId(achToEdit.getAchievementId());
+            if (!modAch.validate()) {
+                request.setAttribute("flash", "Improper input for achievement, try again");
+                request.setAttribute("bean", bean);
+                return "editAchievement";
+            }
+
+            //data is ready to be sent to the database.  Do NOT update the
+            //Achievement ID or date recorded
+            Achievement updatedAch = db.updateAchievement(modAch);
+            if (updatedAch == null) {
+                request.setAttribute("flash", db.getLastError());
+                request.setAttribute("bean", bean);
+                return "editAchievement";
+            }
+            //Can be more efficient about the above by adding Achievement, in order
+            //here instead of calling the dbase again.
+            List achievements = db.getAchievementsByDate(user.getUsername());
+            if (achievements == null)  {
+                request.setAttribute ("flash",db.getLastError());
+                request.getSession().removeAttribute("achievements");
+                return "home";
+            }
+            request.getSession().setAttribute("achievements", achievements);
+            List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
+                                                            achievements, null);
+            Collections.reverse(SixWeeksScores);
+            request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
+            attachCurrentDate(request);
+            return "home";
+        }
+        return "home";
     }
 
     private String home (HttpServletRequest request) {

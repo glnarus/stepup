@@ -112,7 +112,8 @@
         <h2> Achievement Log </h2>
         <div class="scrollbox">
             <c:forEach var="achievement" items="${achievements}">
-                ${achievement.user}: ${achievement}<br>
+                ${achievement.user}: 
+                <a href="stepup?action=editachievement&id=${achievement.achievementId}">${achievement}</a><br>
             </c:forEach>   
         </div>                
             <h4>Star Progress Last 6 Weeks</h4>

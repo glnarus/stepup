@@ -340,6 +340,57 @@ public class StepUpDAO {
     }
 
 
+    /** Updates an Achievement for a user.
+     * Note that the date recorded and ID fields will never change.
+     * @param ach Achievement object that holds the ID and fields to which
+     * to update in the Achievement dbase table.
+     * @return null if error, returns back the ach object if successful
+     */
+    public Achievement updateAchievement (Achievement ach) {
+        String sql = "UPDATE ACHIEVEMENTS SET exercise=?,duration=?,"
+                + "intensity=?,score=?,notes=?,dateoccurred=? WHERE id = ?";
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setString(1,ach.getActivity().toString());
+            pstat.setInt(2,ach.getMinutes());
+            pstat.setString(3,ach.getIntensity().toString());
+            pstat.setDouble(4,ach.getScore());
+            pstat.setString(5,ach.getNotes());
+            pstat.setLong(6,ach.getActivityDate().getTime());
+            pstat.setInt(7, ach.getAchievementId());
+            pstat.executeUpdate();
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return null;
+        } finally {
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return ach;
+    }
+
+    /** Removes an achievement for a user.
+     * @param ach Achievement object that holds the ID of the achievement
+     * to delete.
+     * @return null if error, returns back the ach object if successful
+     */
+    public Achievement removeAchievement (Achievement ach) {
+        String sql = "DELETE FROM ACHIEVEMENTS WHERE id = " +
+                                                ach.getAchievementId();
+        Statement stat = null;
+        try {
+            stat = CONN.createStatement();
+            stat.executeUpdate(sql);
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return null;
+        } finally {
+            if (stat != null)
+                try { stat.close(); } catch (SQLException sqle) {}
+        }
+        return ach;
+    }
 
     public User getUserById (int userId) {
         User user = null;
@@ -423,12 +474,12 @@ public class StepUpDAO {
                 String notes = rs.getString("notes");
                 Date dateOccurred = new Date(rs.getLong("dateoccurred"));
                 Date dateRecorded = new Date(rs.getLong("daterecorded"));
-
+                int id = rs.getInt("id");
                 Activity objActivity = new Activity (exercise);
                 Intensity objIntensity = new Intensity (intensity);
 
                 Achievement achievement = new Achievement (objActivity, minutes,
-                        objIntensity, score, notes, dateOccurred, dateRecorded);
+                     objIntensity, score, notes, dateOccurred, dateRecorded,id);
                 User user = getUserById(rs.getInt("userid"));
                 achievement.setUser(user);
                 achievements.add(achievement);
