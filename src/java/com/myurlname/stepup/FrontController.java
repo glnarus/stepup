@@ -6,6 +6,7 @@
 package com.myurlname.stepup;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
 public class FrontController extends HttpServlet {
 
@@ -24,10 +26,14 @@ public class FrontController extends HttpServlet {
         String action = request.getParameter("action");
         String nextPage = null;
         if (action == null) {
-            if (request.getAttribute("user") == null)
-                action = "login";
+            if (request.getMethod().equals("GET")) {
+                if (request.getSession().getAttribute("user") == null)
+                    action = "login";
+                else
+                    action = "home";
+            }
             else
-                action = "home";
+                action = "upload";
         }
         switch (action) {
             case "login" :
@@ -56,6 +62,14 @@ public class FrontController extends HttpServlet {
 
             case "dashboard":
                 nextPage = dashboard(request);
+                break;
+
+            case "upload":
+                nextPage = uploadImage(request);
+                break;
+
+            case "image":
+                sendImage(request, response);
                 break;
 
             case "logout" :
@@ -108,11 +122,6 @@ public class FrontController extends HttpServlet {
                 request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
                 //attach the current date as default
                 attachCurrentDate(request);
-                //attach Activity Name and Intensity Name strings
-                request.getSession().setAttribute("activityNames",
-                        (String[])getServletContext().getAttribute("activityNames"));
-                request.getSession().setAttribute("intensityNames",
-                        (String[])getServletContext().getAttribute("intensityNames"));
                 return "home";
             }
         } else {
@@ -124,7 +133,7 @@ public class FrontController extends HttpServlet {
 
     private void attachCurrentDate (HttpServletRequest request) {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        request.setAttribute("todaysdate", sdf.format(new Date()));
+        request.getSession().setAttribute("todaysdate", sdf.format(new Date()));
     }
 
     private String register (HttpServletRequest request) {
@@ -175,6 +184,7 @@ public class FrontController extends HttpServlet {
         }
         //Everything registered fine, let's log in the user officially
         request.getSession().setAttribute("user", user);
+        attachCurrentDate(request);
         return "home";
     }
 
@@ -193,7 +203,7 @@ public class FrontController extends HttpServlet {
             request.setAttribute("flash",db.getLastError());
             return "dashboard";
         }
-        request.getSession().setAttribute("achievements", achievements);
+        request.getSession().setAttribute("achievementsAll", achievements);
         //get all the posts for the bulletin board...
         List <Post> posts = db.getSortedPostsByDate();
         if (posts == null) {
@@ -529,6 +539,58 @@ public class FrontController extends HttpServlet {
 
     }
 
+    private void sendImage(HttpServletRequest request, HttpServletResponse response) {
+        String subject = request.getParameter("for");
+        StepUpDAO db = (StepUpDAO)getServletContext().getAttribute("db");
+        User imageUser = db.getUserByUserName(subject);
+        if (imageUser == null) {
+            request.setAttribute("flash","Problem reading the profile picture");
+            return;
+        }
+        Profile profile = db.getProfileFor(imageUser);
+        String pictype = profile.getImageType();
+        byte[] picdata = profile.getImageData();
+        if (picdata == null || pictype == null) {
+            response.setStatus(404);
+            return;
+        }
+        try {
+            response.setContentType(pictype);
+            response.getOutputStream().write(picdata);
+        } catch (IOException ioe) {
+            request.setAttribute("flash", ioe.getMessage());
+        }
+    }
+
+    private String uploadImage(HttpServletRequest request) {
+    if (request.getMethod().equals("GET")) return "uploadPic";
+    try {
+        final Part filePart = request.getPart("pic");
+        String filename = filePart.getSubmittedFileName();
+        String filetype = filePart.getContentType();
+        if (!filetype.contains("image")) {
+            request.setAttribute("flash", "The uploaded file is not an image.");
+            return "uploadPic";
+        }
+        InputStream data = filePart.getInputStream();
+        User user = (User)request.getSession().getAttribute("user");
+        StepUpDAO db = (StepUpDAO)getServletContext().getAttribute("db");
+        db.updateImage(user.getUserId(), filetype, data);
+        if (db.getLastError() != null) {
+            request.setAttribute("flash", db.getLastError());
+            return "uploadPic";
+        }
+        Profile p = db.getProfileFor(user);
+        if (db.getLastError() != null) {
+            request.setAttribute("flash", db.getLastError());
+            return "uploadPic";
+        }
+        user.setProfile(p);
+    } catch (IOException | ServletException e) {
+        request.setAttribute("flash", e.getMessage());
+    }
+    return "uploadPic";
+    }
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

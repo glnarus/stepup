@@ -14,7 +14,7 @@
         <h2 class="flash">${flash}</h2>
         <h2>Activity Stream</h2>
         <div class="scrollboxBig">
-        <c:forEach var="achievement" items="${achievements}">
+        <c:forEach var="achievement" items="${achievementsAll}">
             <a href="stepup?action=profile&profilefor=${achievement.user}">
                                                         ${achievement.user} 
             </a>&nbsp;&nbsp;${achievement.prettyPrintActivityDate}->
@@ -49,6 +49,9 @@
         <p> <a href="stepup?action=home">Home</a>
             <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |              
             <a href="stepup?action=logout">Logout</a>
-        </p>                
+        </p>       
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>

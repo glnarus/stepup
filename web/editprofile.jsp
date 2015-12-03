@@ -35,6 +35,9 @@
                 <tr><td>Reward (optional):</td><td><input id="roundinput" 
                                            value="${bean.reward}" type="text" 
                                            name="reward" placeholder="How would you reward yourself when you meet your goal?"/></td></tr>
+                <tr><td>Profile picture:</td><td>
+                        <a href="stepup?action=upload">Upload a new picture</a>                        
+                </td></tr>                
                 <tr><td colspan="2"><input id="roundinput" 
                                            type="reset" value="Cancel"/>
                                            &nbsp;&nbsp;&nbsp;
@@ -48,5 +51,8 @@
             <a href="stepup?action=profile&profilefor=${user}">View My Profile</a> |            
             <a href="stepup?action=logout">Logout</a>
         </p>
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>

@@ -35,6 +35,8 @@ public class Profile implements Serializable {
     private int profileId;
     private int userId;
     private String errorMessage;
+    private byte[] imageData;
+    private String imageType;
 
     public Profile (RegistrationBean r) {
         this.username = r.getUsername();
@@ -161,7 +163,7 @@ public class Profile implements Serializable {
                 phone = String.format("%s-%s-%s",
                                        phone.substring(0,3),
                                        phone.substring(3,6),
-                                       phone.substring(6,10));               
+                                       phone.substring(6,10));
             }
             else
                 setErrorMessage(this.errorMessage+ "phone");
@@ -320,6 +322,22 @@ public class Profile implements Serializable {
 
     public String getPassword1() {
         return password1;
+    }
+
+    public byte[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(byte[] imageData) {
+        this.imageData = imageData;
+    }
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
     }
 
 }

@@ -22,19 +22,27 @@
            <body>
        </c:otherwise>
    </c:choose> 
-        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
-        <h1><u>${subject}</u>'s Profile</h1>
+               <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>          
+        <h1><u>${subject}</u>'s Profile</h1>        
         <h2 class="flash">${flash}</h2>
+        <c:choose>
+            <c:when test="${profile.imageType ne null}">
+                <img src="stepup?action=image&for=${subject}"/>
+            </c:when>
+            <c:otherwise>
+                <img src="images/default_icon_sm.png" align="left"/>
+            </c:otherwise>
+        </c:choose>             
         <p>Fitness Habit
             <c:choose>
                <c:when test="${subject.badge.badgeHabit == 1}">
-                       <img src="images/bronze_star_home.jpg">
+                       <img src="images/bronze_star_home.png">
                </c:when>
                <c:when test="${subject.badge.badgeHabit == 2}">
-                       <img src="images/silver_star_home.jpg">
+                       <img src="images/silver_star_home.png">
                </c:when> 
                <c:when test="${subject.badge.badgeHabit == 3}"> 
-                       <img src="images/gold_star_home.jpg">
+                       <img src="images/gold_star_home.png">
                </c:when>           
                <c:otherwise>                   
                </c:otherwise>
@@ -69,5 +77,8 @@
             <a href="stepup?action=editprofile">Edit My Profile</a> |            
             <a href="stepup?action=logout">Logout</a>
         </p>
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>

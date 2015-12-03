@@ -54,22 +54,12 @@
             <table id="formtable">
                 <td><input type="hidden" name="action" value="home"/>
                 <tr><td>Activity:</td>                    
-                    <td><select value="${bean.activity}" id="squareinput"
-                                    name="activity" form="achievementform">
-                            <option value="Ball Sports">Ball Sports</option>
-                            <option value="Bicycling">Bicycling</option>
-                            <option value="Boxing">Boxing</option>
-                            <option value="Calisthenics">Calisthenics</option>
-                            <option value="Climbing">Climbing</option>
-                            <option value="Dance">Dance</option>
-                            <option value="Hiking">Hiking</option>
-                            <option value="Misc Cardio">Misc Cardio</option>
-                            <option value="Running">Running</option>
-                            <option value="Swimming">Swimming</option>
-                            <option value="Walking">Walking</option>
-                            <option value="Weights">Weights</option>
-                            <option value="Yoga">Yoga</option>                                                                                    
-                        </select>
+                    <td>
+                    <select name="activity" form="achievementform" id="squareinput">
+                    <c:forEach items="${applicationScope.activityNames}" var="activity">
+                        <option value="${activity}" ${activity == bean.activity ? 'selected' : ''}>${activity}</option>
+                    </c:forEach>
+                    </select>                                               
                     </td></tr>
                 <tr><td>Date Accomplished:</td>
                 <c:choose>
@@ -89,12 +79,12 @@
                                   placeholder="how long in minutes?"/></td></tr>
                 
                <tr><td>Intensity Level:</td>
-                    <td><select id="squareinput" value="${bean.intensity}" 
-                                name="intensity" form="achievementform">
-                            <option value="Light">Light</option>
-                            <option value="Moderate">Moderate</option>
-                            <option value="Hard">Hard</option>
-                            <option value="Strenuous">Strenuous</option>                                                                                
+                   <td>
+                        <select id="squareinput" value="${bean.intensity}" 
+                                name="intensity" form="achievementform">                        
+                            <c:forEach items="${applicationScope.intensityNames}" var="intensity">
+                                <option value="${intensity}" ${intensity == bean.intensity ? 'selected' : ''}>${intensity}</option>
+                            </c:forEach>                                                               
                         </select>
                     </td></tr>                           
                 <tr><td>Notes (optional):</td><td><input id="squareinput" 

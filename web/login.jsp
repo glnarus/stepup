@@ -28,5 +28,8 @@
             </table>
         </form>
         <p><a href="stepup?action=register">Register new user</a></p>
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>

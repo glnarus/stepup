@@ -1,5 +1,7 @@
 package com.myurlname.stepup;
 
+import java.io.InputStream;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -171,6 +173,11 @@ public class StepUpDAO {
                                        rsData.getString("textsubscribe"),
                           new Date(rsData.getLong("joindate")));
                 profile.setProfileId(rsData.getInt("id"));
+                Blob picBlob = rsData.getBlob("picture");
+                if (picBlob != null) {
+                    profile.setImageData(picBlob.getBytes(1,(int)picBlob.length()));
+                    profile.setImageType(rsData.getString("pictype"));
+                }
             }
             else
                 lastError = "Unable to retrieve profile";
@@ -554,6 +561,22 @@ public class StepUpDAO {
         return posts;
     }
 
+    public void updateImage(int userId, String mime, InputStream is) {
+        String sql = "UPDATE Profiles SET pictype = ?, picture = ? WHERE userid = ?";
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setString(1, mime);
+            pstat.setBlob(2, is);
+            pstat.setInt(3, userId);
+            pstat.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
+        }
+    }    
 
     public void close ()
     {

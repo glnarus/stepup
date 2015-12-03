@@ -26,6 +26,9 @@
             </table>
         </form>
         <p><a href="stepup?action=login">Login existing user</a>
-        </p>        
+        </p>     
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>

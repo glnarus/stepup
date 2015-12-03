@@ -26,7 +26,7 @@
                 <tr><td>Activity:</td>
                     <td>
                     <select name="activity" form="achievementform" id="squareinput">
-                    <c:forEach items="${activityNames}" var="activity">
+                    <c:forEach items="${applicationScope.activityNames}" var="activity">
                         <option value="${activity}" ${activity == bean.activity ? 'selected' : ''}>${activity}</option>
                     </c:forEach>
                     </select>                    
@@ -52,7 +52,7 @@
                     <td>
                         <select id="squareinput" value="${bean.intensity}" 
                                 name="intensity" form="achievementform">                        
-                            <c:forEach items="${intensityNames}" var="intensity">
+                            <c:forEach items="${applicationScope.intensityNames}" var="intensity">
                                 <option value="${intensity}" ${intensity == bean.intensity ? 'selected' : ''}>${intensity}</option>
                             </c:forEach>                                                               
                         </select>
@@ -73,5 +73,8 @@
             <a href="stepup?action=profile&profilefor=${user}">View My Profile</a> |            
             <a href="stepup?action=logout">Logout</a>
         </p>
+        <div class="footer">
+        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
+        </div>        
     </body>
 </html>
