@@ -32,8 +32,12 @@ public class FrontController extends HttpServlet {
                 else
                     action = "home";
             }
-            else
-                action = "upload";
+            else {
+                if (request.getSession().getAttribute("user") != null)
+                    action = "upload";
+                else
+                    action = "login";
+            }
         }
         switch (action) {
             case "login" :

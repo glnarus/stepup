@@ -46,6 +46,14 @@ div.scrollboxBig {
     border-radius: 6px;
 }
 
+#profilePic{
+  width: auto;
+  max-width: 150px;
+  height: auto;
+  max-height: 100px;
+}
+
+
 #formtable {border-collapse: collapse;
             }
 #formtable td {border: 0px;

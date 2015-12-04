@@ -35,9 +35,21 @@
                 <tr><td>Reward (optional):</td><td><input id="roundinput" 
                                            value="${bean.reward}" type="text" 
                                            name="reward" placeholder="How would you reward yourself when you meet your goal?"/></td></tr>
-                <tr><td>Profile picture:</td><td>
+                <tr><td>Profile picture:</td>
+                    <td>
+                    <c:choose>
+                        <c:when test="${user.profile.imageType ne null}">
+                            <img id="profilePic" src="stepup?action=image&for=${user}"/>
+                        </c:when>
+                        <c:otherwise>
+                            <img id="profilePic" src="images/default_icon_sm.png" align="left"/>
+                        </c:otherwise>
+                    </c:choose>                                                    
+                    </td>    
+                <tr><td></td>
+                    <td>
                         <a href="stepup?action=upload">Upload a new picture</a>                        
-                </td></tr>                
+                    </td></tr>                
                 <tr><td colspan="2"><input id="roundinput" 
                                            type="reset" value="Cancel"/>
                                            &nbsp;&nbsp;&nbsp;

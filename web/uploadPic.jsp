@@ -16,17 +16,18 @@
         <form method="POST" action="stepup" enctype="multipart/form-data">
             <input type="hidden" name="action" value="upload"/>
             <table id="formtable">
-                <tr><td><label for="pic">Use yer chooser:</label></td><td>Current Pic:</td></tr>
-                <tr><td><input type="file" name="pic" id="pic"/></td><td rowspan="2">
+                <tr><td>Current Pic:</td><td><label for="pic">Select a new picture:</label></td></tr>
+                <tr><td rowspan="2">
                         <c:choose>
                             <c:when test="${user.profile.imageType ne null}">
-                                <img src="stepup?action=image&for=${user.userName}"/>
+                                <img id="profilePic" src="stepup?action=image&for=${user.username}"/>
                             </c:when>
                             <c:otherwise>
-                                <img src="images/default_icon_sm.png"/>
+                                <img id="profilePic" src="images/default_icon_sm.png"/>
                             </c:otherwise>
                         </c:choose>
                     </td>
+                    <td><input type="file" name="pic" id="pic"/></td>
                 </tr>
                 <tr><td><input type="submit" value="Upload Picture"/></td></tr>
             </table>

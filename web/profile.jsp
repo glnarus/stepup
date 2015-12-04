@@ -27,10 +27,10 @@
         <h2 class="flash">${flash}</h2>
         <c:choose>
             <c:when test="${profile.imageType ne null}">
-                <img src="stepup?action=image&for=${subject}"/>
+                <img id="profilePic" src="stepup?action=image&for=${subject}"/>
             </c:when>
             <c:otherwise>
-                <img src="images/default_icon_sm.png" align="left"/>
+                <img id="profilePic" src="images/default_icon_sm.png" align="left"/>
             </c:otherwise>
         </c:choose>             
         <p>Fitness Habit
