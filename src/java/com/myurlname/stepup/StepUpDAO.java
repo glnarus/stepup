@@ -302,7 +302,7 @@ public class StepUpDAO {
             if (pstat != null)
                 try { pstat.close(); } catch (SQLException sqle) {}
         }
-        return 0;
+        return postId;
     }
 
     /** Updates the profile for a user.  This must be done for
@@ -576,7 +576,162 @@ public class StepUpDAO {
         } finally {
             if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
         }
-    }    
+    }
+
+    /**
+     *
+     * @param userId - the ID of the logged in User
+     * @param followingId - the ID of the person the User may or may not be followign
+     * @return Boolean object (true) if User is following 'followingId'.
+     * False otherwise.  null if there's a dbase problem
+     */
+    public Boolean checkForFollowing (int userId, int followingId) {
+        String sql = String.format(
+                "SELECT * FROM FOLLOWERS WHERE FOLLOWERID=%d AND BEINGFOLLOWEDID=%d",
+                userId, followingId);
+        Statement stat = null;
+        ResultSet rs = null;
+        Boolean isFollowing = false;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            if (rs.next()) {
+                isFollowing = true;
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        if (lastError == null)
+            return isFollowing;
+        else
+            return null;
+    }
+
+    /**
+     * Inserts a row into the Followers table to allow a user to follow another
+     * user's actions.  Method will check if a relationship already exists and
+     * do nothing if it does.
+     * @param userId - the logged in User's ID
+     * @param followingId - the person's user ID that the logged in User wants
+     * to follow
+     * @return ID of new row in Followers table if all goes well, -1 if
+     * there's an error.
+     */
+    public int startFollowing (int userId, int followingId) {
+        //front controller should do this, but double check to be sure
+        if (checkForFollowing(userId,followingId)) return 0;
+        if ((getUserById(userId) == null) || (getUserById(followingId) == null)) {
+            lastError = "UserId or following Id does not exist";
+            return -1;
+        }
+        String sql = "INSERT INTO Followers (beingfollowedid,followerid) ";
+        sql += "VALUES (?,?)";
+        PreparedStatement pstat = null;
+        ResultSet rs = null;
+        int tableId = -1;
+        try {
+            pstat = CONN.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+            pstat.setInt(1,followingId);
+            pstat.setInt(2, userId);
+            pstat.executeUpdate();
+            rs = pstat.getGeneratedKeys();
+            if (rs.next()) {
+                tableId = rs.getInt(1);
+                lastError = null;
+            }
+            else
+                lastError = "Unable to create follower relationship";
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return -1;
+        } finally {
+            if (rs != null)
+                try { rs.close();} catch (SQLException sqle) {}
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return tableId;
+    }
+
+    /**
+     * Removes a row into the Followers table to stop a user from following
+     * another user's actions.  Method will check if a relationship already
+     * exists and do nothing if it does not.
+     * @param userId - the logged in User's ID
+     * @param followingId - the person's user ID that the logged in User wants
+     * to stop following
+     * @return 0 if everything goes well, -1 if there's an error.
+     */
+    public int stopFollowing (int userId, int followingId) {
+        //front controller should do this, but double check to be sure
+        if (!checkForFollowing(userId,followingId)) return 0;
+        String sql = String.format(
+                "DELETE FROM FOLLOWERS "
+                        + "WHERE beingfollowedid=%d AND followerid=%d",
+                        followingId, userId);
+        Statement stat = null;
+        int result = -1;
+        try {
+            stat = CONN.createStatement();
+            stat.executeUpdate(sql);
+            result = 0;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (stat != null)
+                try { stat.close(); } catch (SQLException sqle) {}
+        }
+        return result;
+    }
+
+
+    /**
+     * Returns an ArrayList of email addresses for all the people following the
+     * User identified by parameter userId
+     * @param userId - the user that everyone's email is the List is following
+     * @return List<String> email addresses, empty List for none, null for
+     * a database problem.
+     */
+    public List<String> getFollowerEmails (int userId) {
+        List<String> emails = new ArrayList<>();
+        String sql = "SELECT email FROM Profiles JOIN Followers ON Profiles.userid = ";
+        sql += "Followers.followerid WHERE beingfollowedid=%d";
+        sql = String.format(sql, userId);
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                emails.add(rs.getString("email"));
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            emails = null;
+            lastError = sqle.getMessage();
+        }
+            finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return emails;
+    }
 
     public void close ()
     {

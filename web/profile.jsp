@@ -56,12 +56,19 @@
         <c:choose>
             <c:when test="${user.username eq subject.username}">
                 <p>Email:&nbsp;${profile.email}</p>
-                <p>Phone number:&nbsp;${profile.phone}</p>        
-                <p>Receive email notifications?&nbsp;${profile.emailSubscribe}</p>
-                <p>Receive text notifications?&nbsp;${profile.textSubscribe}</p>                                
+                <p>Phone number:&nbsp;${profile.phone}</p>                                      
             </c:when>
             <c:otherwise>
                 <p><small>Contact info fields are considered private.</small>
+                <c:choose>
+                    <c:when test="${following == null}">
+                        <p><a href="stepup?action=follow&id=${subject.userId}">Follow ${subject}'s fitness activity</a>
+                    </c:when>
+                    <c:otherwise>
+                        <p><a href="stepup?action=unfollow&id=${subject.userId}">Turn off following ${subject}</a>
+                    </c:otherwise>
+                </c:choose>
+                
             </c:otherwise>
         </c:choose>                          
         <h2> Achievement Log </h2>

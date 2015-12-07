@@ -72,6 +72,14 @@ public class FrontController extends HttpServlet {
                 nextPage = uploadImage(request);
                 break;
 
+            case "follow":
+                nextPage = follow(request);
+                break;
+
+            case "unfollow":
+                nextPage = unfollow(request);
+                break;
+
             case "image":
                 sendImage(request, response);
                 break;
@@ -288,10 +296,20 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("subjectachievements", achievements);
         if (user.getUserId() == subject.getUserId())
             user.setProfile(profile);
+        else {
+            //determine if this User is following the subject
+            Boolean isFollowing = db.checkForFollowing(user.getUserId(), subject.getUserId());
+            if (isFollowing == null) {
+                request.setAttribute("flash", db.getLastError());
+                return "profile";
+            }
+            else if (isFollowing)
+                request.getSession().setAttribute("following", "true");
+            else
+                request.getSession().setAttribute("following", null);
+
+        }
         request.getSession().setAttribute("profile", profile);
-        //change line below to use "for" attribute's user object
-        //add a reduced Profile object to the profilefor user and have
-        //the .jsp use if/tests on how to write the page (profilefor vs user mismatch is the condition)
         request.getSession().setAttribute("subject", subject);
 
         //everything went ok, and now subject has the profile data,
@@ -532,6 +550,7 @@ public class FrontController extends HttpServlet {
                                                             achievements, null);
             Collections.reverse(SixWeeksScores);
             request.getSession().setAttribute("sixweeksscores",SixWeeksScores);
+            sendOutUpdatesToFollowers(db,achievement);
             attachCurrentDate(request);
             return "home";
         }
@@ -595,6 +614,72 @@ public class FrontController extends HttpServlet {
     }
     return "uploadPic";
     }
+
+    private String follow (HttpServletRequest request) {
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+        int toFollowId = 0;
+        String toFollowIdString = request.getParameter("id");
+        try {toFollowId = Integer.parseInt(toFollowIdString);}
+        catch (NumberFormatException nfe) {
+            request.setAttribute("flash","Incorrect follower ID parameter");
+            return "profile";
+        }
+        //data inputs look good, so let's establish the follower relationship
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        int result = db.startFollowing(user.getUserId(), toFollowId);
+        if (result < 0) {
+            request.setAttribute("flash",db.getLastError());
+            return "profile";
+        }
+        request.getSession().setAttribute("following", "true");
+        return "profile";
+    }
+
+    private String unfollow (HttpServletRequest request) {
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";
+        int toFollowId = 0;
+        String toFollowIdString = request.getParameter("id");
+        try {toFollowId = Integer.parseInt(toFollowIdString);}
+        catch (NumberFormatException nfe) {
+            request.setAttribute("flash","Incorrect follower ID parameter");
+            return "profile";
+        }
+        //data inputs look good, so let's destroy the follower relationship
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        int result = db.stopFollowing(user.getUserId(), toFollowId);
+        if (result < 0) {
+            request.setAttribute("flash",db.getLastError());
+            return "profile";
+        }
+        request.getSession().setAttribute("following", null);
+        return "profile";
+    }
+
+    //userId is the user that this achievement
+    private void sendOutUpdatesToFollowers(StepUpDAO db, Achievement ach) {
+        List<String> emails = db.getFollowerEmails(ach.getUser().getUserId());
+        if ((emails == null) || (emails.isEmpty())) return;
+        for (String email : emails) {
+            String contents = String.format(
+                    "StepUp&trade; user %s recorded a new activity!<br><br>%s<br><br>"
+                            + "<italic>Thank you from StepUp&trade;</italic><br><br><br><small>"
+                            + "To stop these "
+                            + "emails, login and visit the profile page of those"
+                            + " users you which to stop following and click the"
+                            + "unfollow link.</small>",
+                    ach.getUser().getUsername(),ach);
+            String subject = "New activity for: " + ach.getUser().getUsername();
+            SendEmail.generateAndSendEmail(email,subject, contents);
+
+        }
+
+
+    }
+
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
