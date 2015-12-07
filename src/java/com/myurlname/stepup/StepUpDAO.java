@@ -713,7 +713,9 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             while (rs.next()) {
-                emails.add(rs.getString("email"));
+                String email = rs.getString("email");
+                if ((email != null) && (email.length()>0))
+                    emails.add(email);
             }
             lastError = null;
         } catch (SQLException sqle) {
