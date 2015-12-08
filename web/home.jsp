@@ -29,7 +29,7 @@
    </c:choose>     
     
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
-        <h1>Welcome back <u>${user.username}</u>!</h1>
+        <h1>Welcome <u>${user.username}</u>!</h1>
  
             <c:choose>
                <c:when test="${user.badge.badgeHabit == 1}">

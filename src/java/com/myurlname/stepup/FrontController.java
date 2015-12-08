@@ -387,7 +387,8 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("profile", userEdited.getProfile());
         request.getSession().setAttribute("user", userEdited);
         request.getSession().setAttribute("subject", userEdited);
-        return "profile";
+        request.setAttribute("bean", r);
+        return "editprofile";
     }
 
     private String editAchievement (HttpServletRequest request) {

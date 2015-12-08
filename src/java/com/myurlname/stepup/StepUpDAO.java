@@ -172,6 +172,10 @@ public class StepUpDAO {
                                        rsData.getString("emailsubscribe"),
                                        rsData.getString("textsubscribe"),
                           new Date(rsData.getLong("joindate")));
+                //since phone is a CHAR and not VARCHAR, it might be all spaces
+                //let's get rid of that if possible
+                if (profile.getPhone() != null) 
+                    profile.setPhone(profile.getPhone().trim());
                 profile.setProfileId(rsData.getInt("id"));
                 Blob picBlob = rsData.getBlob("picture");
                 if (picBlob != null) {
