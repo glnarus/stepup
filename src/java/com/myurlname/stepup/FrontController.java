@@ -254,6 +254,8 @@ public class FrontController extends HttpServlet {
             request.setAttribute("flash",db.getLastError());
             return "dashboard";
         }
+        //send email out if people are following this post
+        sendOutUpdatesToFollowers(db, post);
         //pull all posts again (there may have been more posts added since we
         //have been working on this one)
         List <Post> posts = db.getSortedPostsByDate();
@@ -385,7 +387,8 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("profile", userEdited.getProfile());
         request.getSession().setAttribute("user", userEdited);
         request.getSession().setAttribute("subject", userEdited);
-        return "profile";
+        request.setAttribute("bean", r);
+        return "editprofile";
     }
 
     private String editAchievement (HttpServletRequest request) {
@@ -668,11 +671,34 @@ public class FrontController extends HttpServlet {
                     "StepUp&trade; user %s recorded a new activity!<br><br>%s<br><br>"
                             + "<italic>Thank you from StepUp&trade;</italic><br><br><br><small>"
                             + "To stop these "
-                            + "emails, login and visit the profile page of those"
-                            + " users you which to stop following and click the"
-                            + "unfollow link.</small>",
+                            + "emails, <a href=\"http://localhost:8080/StepUp/\">login</a>"
+                            +" and visit the profile page of those"
+                            + " users you want to stop following and click the"
+                            + " unfollow link.</small>",
                     ach.getUser().getUsername(),ach);
             String subject = "New activity for: " + ach.getUser().getUsername();
+            SendEmail.generateAndSendEmail(email,subject, contents);
+
+        }
+
+
+    }
+
+    //userId is the user that this achievement
+    private void sendOutUpdatesToFollowers(StepUpDAO db, Post post) {
+        List<String> emails = db.getFollowerEmails(post.getUserId());
+        if ((emails == null) || (emails.isEmpty())) return;
+        for (String email : emails) {
+            String contents = String.format(
+                    "StepUp&trade; user %s made a new post!<br><br>%s<br><br>"
+                            + "<italic>Thank you from StepUp&trade;</italic><br><br><br><small>"
+                            + "To stop these "
+                            + "emails, <a href=\"http://localhost:8080/StepUp/\">login</a>"
+                            +" and visit the profile page of those"
+                            + " users you want to stop following and click the"
+                            + " unfollow link.</small>",
+                    post.getUsername(),post);
+            String subject = "New post from : " + post.getUsername();
             SendEmail.generateAndSendEmail(email,subject, contents);
 
         }
