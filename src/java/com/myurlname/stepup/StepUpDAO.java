@@ -572,7 +572,7 @@ public class StepUpDAO {
             pstat.executeUpdate();
             lastError = null;
         } catch (SQLException sqle) {
-            lastError = sqle.getMessage();
+            lastError = sqle.getMessage();            
         } finally {
             if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
         }

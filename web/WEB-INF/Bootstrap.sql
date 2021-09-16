@@ -32,7 +32,7 @@ CREATE TABLE Profiles (
     userid INT NOT NULL,
     goal VARCHAR(200),
     reward VARCHAR(200),
-    picture BLOB(200K),
+    picture BLOB(5120K),
     pictype VARCHAR(30),
     emailsubscribe BOOLEAN,
     textsubscribe BOOLEAN,

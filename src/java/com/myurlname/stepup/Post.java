@@ -2,7 +2,7 @@ package com.myurlname.stepup;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 /**Post will hold post content, a postDate, a username string (author's username)
  * and the ID of the post in the database.  We will implement this as a
  * bean for ease of use with EL in our JSPs.

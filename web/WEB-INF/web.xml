@@ -38,8 +38,8 @@
         <servlet-name>FrontController</servlet-name>
         <servlet-class>com.myurlname.stepup.FrontController</servlet-class>
         <multipart-config>
-            <location>C:\Temp</location>
-            <max-file-size>50004800</max-file-size>
+            <!--<location>C:\Temp</location>--> <!--Had an exception because this folder wasn't created, so let's see what default (not setting it) does-->
+            <max-file-size>5242880</max-file-size> <!--Make sure this matches the max BLOB size for the picture field in the database (bootstrap.sql)-->
         </multipart-config>        
     </servlet>
     <servlet-mapping>
