@@ -18,7 +18,7 @@
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1>Edit <u>${user}</u>'s Achievement</h1>
         <h2 class="flash">${flash}</h2>              
-          <form method="POST" action="stepup" id="achievementform">            
+          <form method="POST" action="<c:url value='stepup'/>" id="achievementform">            
             <fieldset>
             <table id="formtable">
                 <input type="hidden" name="action" value="editachievement"/>
@@ -68,13 +68,11 @@
             </fieldset>
         </form>        
         <a href="stepup?action=editachievement&id=${achToEdit.achievementId}&delete=yes"><em>Delete Achievement</em></a>
-        <p> <a href="stepup?action=home">Home</a>
-            <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=profile&profilefor=${user}">View My Profile</a> |            
-            <a href="stepup?action=logout">Logout</a>
+        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+            <a href="<c:url value='stepup?action=dashboard'/>">Group Dashboard</a> |
+            <a href="<c:url value='stepup?action=profile&profilefor=${user}'/>">View My Profile</a> |            
+            <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+<%@ include file="footer.jspf"%> 
     </body>
 </html>

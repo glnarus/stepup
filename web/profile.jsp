@@ -79,13 +79,11 @@
         </div>                         
 
         
-        <p> <a href="stepup?action=home">Home</a>
-            <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=editprofile">Edit My Profile</a> |            
-            <a href="stepup?action=logout">Logout</a>
+        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+            <a href="<c:url value='stepup?action=dashboard'/>">Group Dashboard</a> |
+            <a href="<c:url value='stepup?action=editprofile'/>">Edit My Profile</a> |            
+            <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+<%@ include file="footer.jspf"%>      
     </body>
 </html>

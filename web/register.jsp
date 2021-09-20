@@ -1,3 +1,4 @@
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@page contentType="text/html" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 <!DOCTYPE html>
 <html>
@@ -10,7 +11,7 @@
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1>Register for StepUp&trade;</h1>
         <h2 class="flash">${flash}</h2>
-        <form method="POST" action="stepup">
+        <form method="POST" action="<c:url value='stepup'/>">
             <input type="hidden" name="action" value="register"/>
             <table id="formtable">
                 <tr><td>Username:</td><td><input value="${bean.username}" type="text" name="user" placeholder="3 to 15 characters."/></td></tr>
@@ -25,10 +26,8 @@
                 <tr><td colspan="2"><input type="submit" value="Create Account!"/></td></tr>
             </table>
         </form>
-        <p><a href="stepup?action=login">Login existing user</a>
+                <p><a href="<c:url value='stepup?action=login' />">Login existing user</a>
         </p>     
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+<%@ include file="footer.jspf"%>       
     </body>
 </html>

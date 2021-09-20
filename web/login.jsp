@@ -27,9 +27,7 @@
                                            value="Log in!"/></td></tr>
             </table>
         </form>
-        <p><a href="stepup?action=register">Register new user</a></p>
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+        <p><a href="stepup?action=register">Register new user</a></p> <!--todo, use this as a TEST, then fix it to use <c:url value .. -->
+<%@ include file="footer.jspf"%>    
     </body>
 </html>

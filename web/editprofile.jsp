@@ -12,7 +12,7 @@
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1><u>${user}</u>'s Profile</h1>
         <h2 class="flash">${flash}</h2>      
-          <form method="POST" action="stepup">
+          <form method="POST" action="<c:url value='stepup'/>">
             <input type="hidden" name="action" value="editprofile"/>
             <table id="formtable">               
                 <tr><td>First Name:</td><td><input id="roundinput" 
@@ -48,7 +48,7 @@
                     </td>    
                 <tr><td></td>
                     <td>
-                        <a href="stepup?action=upload">Upload a new picture</a>                        
+                        <a href="<c:url value='stepup?action=upload'/>">Upload a new picture</a>                        
                     </td></tr>                
                 <tr><td colspan="2"><input id="roundinput" 
                                            type="reset" value="Cancel"/>
@@ -58,13 +58,11 @@
                                               value="Save Changes"/></td></tr>
             </table>
           </form>
-        <p> <a href="stepup?action=home">Home</a>
-            <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=profile&profilefor=${user}">View My Profile</a> |            
-            <a href="stepup?action=logout">Logout</a>
+                        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+            <a href="<c:url value='stepup?action=dashboard">Group Dashboard'/></a> |
+            <a href="<c:url value='stepup?action=profile&profilefor=${user}'/>">View My Profile</a> |            
+            <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+<%@ include file="footer.jspf"%>     
     </body>
 </html>

@@ -13,7 +13,7 @@
         <h1>Upload a Profile Picture for ${user}'s StepUp&trade; Account</h1>
         <h2 class="flash">${flash}</h2>    
 
-        <form method="POST" action="stepup" enctype="multipart/form-data">
+        <form method="POST" action="<c:url value='stepup'/>" enctype="multipart/form-data">
             <input type="hidden" name="action" value="upload"/>
             <table id="formtable">
                 <tr><td>Current Pic:</td><td><label for="pic">Select a new picture:</label></td></tr>
@@ -32,14 +32,12 @@
                 <tr><td><input type="submit" value="Upload Picture"/></td></tr>
             </table>
         </form>
-        <p> <a href="stepup?action=home">Home</a>
-            <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=editprofile">Edit My Profile</a> |            
-            <a href="stepup?action=logout">Logout</a>
+        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+            <a href="<c:url value='stepup?action=dashboard'/>">Group Dashboard</a> |
+            <a href="<c:url value='stepup?action=editprofile'/>">Edit My Profile</a> |            
+            <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>
         
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>         
+<%@ include file="footer.jspf"%>     
     </body>
 </html>

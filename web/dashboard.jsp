@@ -15,8 +15,8 @@
         <h2>Activity Stream</h2>
         <div class="scrollboxBig">
         <c:forEach var="achievement" items="${achievementsAll}">
-            <a href="stepup?action=profile&profilefor=${achievement.user}">
-                                                        ${achievement.user} 
+            <a href="<c:url value='stepup?action=profile&profilefor=${achievement.user}'/>">
+                                                        ${achievement.user}
             </a>&nbsp;&nbsp;${achievement.prettyPrintActivityDate}->
             ${achievement.activity}&nbsp;${achievement.minutes}&nbsp;minutes
             &nbsp;at&nbsp;${achievement.intensity}&nbsp;intensity
@@ -30,12 +30,12 @@
         <div class="scrollbox">
         <c:forEach var="post" items="${posts}">
             [${post.prettyPrintPostDate}]&nbsp;
-            <a href="stepup?action=profile&profilefor=${post.username}">
+            <a href="<c:url value='stepup?action=profile&profilefor=${post.username}' />">
                                                         ${post.username} 
             </a>->&nbsp;&nbsp;${post.content}<br>                                   
         </c:forEach>   
         </div>
-        <form method="POST" action="stepup">
+        <form method="POST" action="<c:url value='stepup'/>">
             <input type="hidden" name="action" value="dashboard"/>
             <table>
                 <tr><td><input type="text" size="190" maxlength="280" id="postinput" 
@@ -46,12 +46,10 @@
             </table>
         </form>        
         
-        <p> <a href="stepup?action=home">Home</a>
-            <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |              
-            <a href="stepup?action=logout">Logout</a>
+        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+            <a href="<c:url value='stepup?action=profile&profilefor=${user}'/>">My Profile</a> |              
+            <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>       
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>        
+    <%@ include file="footer.jspf"%>    
     </body>
 </html>

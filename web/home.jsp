@@ -49,7 +49,7 @@
            </c:choose>            
         <h2>Enter a new achievement</h2>
         <h2 class="flash">${flash}</h2>
-        <form method="POST" action="stepup" id="achievementform">     
+        <form method="POST" action="<c:url value='stepup'/>" id="achievementform">     
             <fieldset>
             <table id="formtable">
                 <td><input type="hidden" name="action" value="home"/>
@@ -94,16 +94,16 @@
                                             value="Log it!"/></td></tr>
             </table>
             </fieldset>
-        </form>
-        <p> <a href="stepup?action=dashboard">Group Dashboard</a> |
-            <a href="stepup?action=profile&profilefor=${user}">My Profile</a> |            
-            <a href="stepup?action=logout">Logout</a>
+        </form>       
+        <p> <a href="<c:url value = 'stepup?action=dashboard' />">Group Dashboard</a> |                                  
+            <a href="<c:url value ='stepup?action=profile&profilefor=${user}'/>">My Profile</a> |            
+            <a href="<c:url value = 'stepup?action=logout'/>">Logout</a>
         </p>
         <h2> Achievement Log </h2>
         <div class="scrollbox">
             <c:forEach var="achievement" items="${achievements}">
                 ${achievement.user}: 
-                <a href="stepup?action=editachievement&id=${achievement.achievementId}">${achievement}</a><br>
+                <a href="<c:url value ='stepup?action=editachievement&id=${achievement.achievementId}' />">${achievement}</a><br>
             </c:forEach>   
         </div>                
             <h4>Star Progress Last 6 Weeks</h4>
@@ -158,8 +158,6 @@
                 weighted differently; for example Running for 10 minutes is 
                 worth 25 minutes of Walking.
                 </div>
-        <div class="footer">
-        Copyright &copy;2015 Gabriel Narus ACC Capstone Project                    
-        </div>
+<%@ include file="footer.jspf"%>
     </body>    
 </html>
