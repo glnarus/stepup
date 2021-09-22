@@ -47,8 +47,9 @@
     <servlet>
         <servlet-name>FrontController</servlet-name>
         <servlet-class>com.myurlname.stepup.FrontController</servlet-class>
+        <load-on-startup>1</load-on-startup> <!--initialize on startup rather than wait until first request-->
         <multipart-config>
-            <!--<location>C:\Temp</location>--> <!--Use default location on server deployment drive-->
+            <!--Use default location on server deployment drive rather than specify <location> here, FrontController will delete it after use anyway-->
             <max-file-size>20971520</max-file-size> <!--20MB.  We coerce images down to a smaller size for storage, so we are OK with a large max file size for upload-->
         </multipart-config>        
     </servlet>
@@ -74,7 +75,7 @@
                 StepUpPages
             </web-resource-name>
             <url-pattern>/images/*</url-pattern>
-            <url-pattern>/pages/*</url-pattern>
+            <url-pattern>/pages/*</url-pattern> <!--Alternative implementation would be to move all these files under WEB-INF, but the wildcards here make this pretty maintanence free and I feel a 'no permissions' response is better than 'not found'-->
             <url-pattern>/StepUp.css</url-pattern>
         </web-resource-collection>        
         <auth-constraint/> <!--Disallow any direct access to these items, they will be served up according to login/session authentication by Front Controller instead-->                
