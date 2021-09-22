@@ -27,7 +27,7 @@
                                            value="Log in!"/></td></tr>
             </table>
         </form>
-        <p><a href="stepup?action=register">Register new user</a></p> <!--todo, use this as a TEST, then fix it to use <c:url value .. -->
+        <p><a href="stepup?action=register">Register new user</a></p>
 <%@ include file="footer.jspf"%>    
     </body>
 </html>

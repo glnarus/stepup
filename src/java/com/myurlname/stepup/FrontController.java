@@ -7,9 +7,7 @@ package com.myurlname.stepup;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -582,7 +580,7 @@ public class FrontController extends HttpServlet {
         }
         try {
             response.setContentType(pictype);
-            response.getOutputStream().write(picdata);
+            response.getOutputStream().write(picdata);            
         } catch (IOException ioe) {
             request.setAttribute("flash", ioe.getMessage());
         }
@@ -590,34 +588,50 @@ public class FrontController extends HttpServlet {
 
     private String uploadImage(HttpServletRequest request) {
     if (request.getMethod().equals("GET")) return "uploadPic";
+    Part filePart = null;
+    ProfilePicDataAndType pic = null;
     try {
-        final Part filePart = request.getPart("pic");
-        String filename = filePart.getSubmittedFileName();
+        filePart = request.getPart("pic");
         String filetype = filePart.getContentType();
         if (!filetype.contains("image")) {
             request.setAttribute("flash", "The uploaded file is not an image.");
+            try {filePart.delete();} catch (Exception ignored) {}            
             return "uploadPic";
-        }
-        InputStream data = filePart.getInputStream();
+        }                
+        int maxSize = (int)request.getServletContext().getAttribute("profilePicSize");
+        int maxPixelsOnEdge = (int)request.getServletContext().getAttribute("profilePicMaxPixelCount");        
+        pic = ProfilePictureFactory.getEnforcedSizePicture(filePart, 
+                                                                        maxSize, 
+                                                                        maxPixelsOnEdge);
         User user = (User)request.getSession().getAttribute("user");
         StepUpDAO db = (StepUpDAO)getServletContext().getAttribute("db");
-        db.updateImage(user.getUserId(), filetype, data);
+        db.updateImage(user.getUserId(), pic.getContentType(), pic.getData());
         if (db.getLastError() != null) {
-            request.setAttribute("flash", db.getLastError());
+            request.setAttribute("flash", db.getLastError());    
+            pic.close();
+            try {filePart.delete();} catch (Exception ignored) {}            
             return "uploadPic";
         }
         Profile p = db.getProfileFor(user);
         if (db.getLastError() != null) {
             request.setAttribute("flash", db.getLastError());
+            pic.close();
+            try {filePart.delete();} catch (Exception ignored) {}            
             return "uploadPic";
         }
-        user.setProfile(p);
+        user.setProfile(p);  
+        filePart.delete();
     } catch (IOException | ServletException e) {
         request.setAttribute("flash", e.getMessage());
+        if (pic != null) pic.close();
+        try {filePart.delete();} catch (Exception ignored) {}
+        return "uploadPic";    
+    }    
+    pic.close();
+    try {filePart.delete();} catch (Exception e) {}
+    return "profile";
     }
-    return "uploadPic";
-    }
-
+   
     private String follow (HttpServletRequest request) {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)

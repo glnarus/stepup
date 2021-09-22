@@ -16,7 +16,7 @@
         <form method="POST" action="<c:url value='stepup'/>" enctype="multipart/form-data">
             <input type="hidden" name="action" value="upload"/>
             <table id="formtable">
-                <tr><td>Current Pic:</td><td><label for="pic">Select a new picture:</label></td></tr>
+                <tr><td>Current Pic:</td><td><label for="pic">Select a new picture (20MB max size):</label></td></tr>
                 <tr><td rowspan="2">
                         <c:choose>
                             <c:when test="${user.profile.imageType ne null}">

@@ -22,6 +22,8 @@ public class ContextListener implements ServletContextListener {
         String dbName = sc.getInitParameter("dbName");
         String dbUsername = sc.getInitParameter("dbUsername");
         String dbPassword = sc.getInitParameter("dbPassword");
+        int profilePicSize = Integer.parseInt(sc.getInitParameter("profilePicSize"));
+        int profilePicMaxPixelCount = Integer.parseInt(sc.getInitParameter("profilePicMaxPixelCount"));
         String jdbcUrl =
                 String.format("%s://%s:%s/%s;user=%s;password=%s",
                    dbProtocol, dbHost, dbPort, dbName, dbUsername, dbPassword);
@@ -46,6 +48,8 @@ public class ContextListener implements ServletContextListener {
                                     "Hard",
                                     "Strenuous"};
         sc.setAttribute("intensityNames",intensityNames);
+        sc.setAttribute("profilePicSize", profilePicSize);
+        sc.setAttribute("profilePicMaxPixelCount", profilePicMaxPixelCount);
     }
 
     @Override

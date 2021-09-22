@@ -30,6 +30,16 @@
         <param-name>dbName</param-name>
         <param-value>stepup</param-value>
     </context-param>
+    <context-param>
+        <description>max size in bytes of profile pictures</description>
+        <param-name>profilePicSize</param-name>
+        <param-value>256000</param-value>
+    </context-param>    
+    <context-param>
+        <description>Max size in pixels of profile pic dimensions</description>
+        <param-name>profilePicMaxPixelCount</param-name>
+        <param-value>250</param-value>
+    </context-param>        
     <listener>
         <description>ServletContextListener</description>
         <listener-class>com.myurlname.stepup.ContextListener</listener-class>
@@ -38,8 +48,8 @@
         <servlet-name>FrontController</servlet-name>
         <servlet-class>com.myurlname.stepup.FrontController</servlet-class>
         <multipart-config>
-            <!--<location>C:\Temp</location>--> <!--Had an exception because this folder wasn't created, so let's see what default (not setting it) does-->
-            <max-file-size>5242880</max-file-size> <!--Make sure this matches the max BLOB size for the picture field in the database (bootstrap.sql)-->
+            <!--<location>C:\Temp</location>--> <!--Use default location on server deployment drive-->
+            <max-file-size>20971520</max-file-size> <!--20MB.  We coerce images down to a smaller size for storage, so we are OK with a large max file size for upload-->
         </multipart-config>        
     </servlet>
     <servlet-mapping>
@@ -54,4 +64,8 @@
     <welcome-file-list>
         <welcome-file>stepup</welcome-file>
     </welcome-file-list>
+    <error-page>
+        <exception-type>java.lang.Throwable</exception-type>
+        <location>/errorPage.jsp</location>
+    </error-page>
 </web-app>

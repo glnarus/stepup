@@ -1,33 +1,22 @@
 <%-- 
-    Document   : login
-    Created on : Oct 31, 2015, 4:54:57 PM
+    Document   : errorPage
+    Created on : Sep 20, 2021, 2:20:10 PM
     Author     : gabriel
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+<%@page isErrorPage="true" %>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>StepUp&trade; - Login</title>
+        <title>StepUp&trade; - Error</title>
         <link rel="stylesheet" type="text/css" href="StepUp.css"/>
     </head>
     <body>
-        <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
-        <h1>Log in to StepUp&trade;</h1>
-        <h2 class="flash">${flash}</h2>
-        <form method="POST" action="stepup">
-            <input type="hidden" name="action" value="login"/>
-            <table id="logintable">
-                <tr><td>username:</td><td><input id="roundinput" type="text" 
-                                                 name="username"/></td></tr>
-                <tr><td>password:</td><td><input id="roundinput" type="password" 
-                                                 name="password"/></td></tr>
-                <tr><td colspan="2"><input id="roundinput" type="submit" 
-                                           value="Log in!"/></td></tr>
-            </table>
-        </form>
-        <p><a href="stepup?action=register">Register new user</a></p> <!--todo, use this as a TEST, then fix it to use <c:url value .. -->
+        <h1>Our apologies, an unexpected error occurred</h1>
+        <p><a href="<c:url value='stepup'/>">Return to StepUp</a></p>       
 <%@ include file="footer.jspf"%>    
     </body>
 </html>
