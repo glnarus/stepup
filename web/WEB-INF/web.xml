@@ -68,4 +68,16 @@
         <exception-type>java.lang.Throwable</exception-type>
         <location>/errorPage.jsp</location>
     </error-page>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>
+                StepUpPages
+            </web-resource-name>
+            <url-pattern>/images/*</url-pattern>
+            <url-pattern>/pages/*</url-pattern>
+            <url-pattern>/StepUp.css</url-pattern>
+        </web-resource-collection>        
+        <auth-constraint/> <!--Disallow any direct access to these items, they will be served up according to login/session authentication by Front Controller instead-->                
+    </security-constraint>
+        
 </web-app>

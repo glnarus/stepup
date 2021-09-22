@@ -92,7 +92,7 @@ public class FrontController extends HttpServlet {
                 else
                     nextPage = "login";
         }
-        request.getRequestDispatcher(nextPage + ".jsp").forward(request,
+        request.getRequestDispatcher("pages/" + nextPage + ".jsp").forward(request,
                                                                 response);
     }
 
