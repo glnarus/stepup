@@ -226,7 +226,7 @@ public class FrontController extends HttpServlet {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";
-        if (request.getSession().getAttribute("achievements") == null) {
+        if (request.getSession().getAttribute("achievementsAll") == null) {
             //a POST without previously viewing the dashboard is weird, if a user
             //does this weird thing somehow, send them home
             return "home";
