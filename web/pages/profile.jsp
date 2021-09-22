@@ -24,7 +24,7 @@
    </c:choose> 
                <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>          
         <h1><u>${subject}</u>'s Profile</h1>        
-        <h2 class="flash">${flash}</h2>
+        <%@ include file="flash.jspf"%>  
         <c:choose>
             <c:when test="${profile.imageType ne null}">
                 <img id="profilePic" src="stepup?action=image&for=${subject}"/>

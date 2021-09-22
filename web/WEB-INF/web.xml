@@ -34,12 +34,12 @@
         <description>max size in bytes of profile pictures</description>
         <param-name>profilePicSize</param-name>
         <param-value>256000</param-value>
-    </context-param>    
+    </context-param>
     <context-param>
         <description>Max size in pixels of profile pic dimensions</description>
         <param-name>profilePicMaxPixelCount</param-name>
         <param-value>250</param-value>
-    </context-param>        
+    </context-param>
     <listener>
         <description>ServletContextListener</description>
         <listener-class>com.myurlname.stepup.ContextListener</listener-class>
@@ -47,15 +47,26 @@
     <servlet>
         <servlet-name>FrontController</servlet-name>
         <servlet-class>com.myurlname.stepup.FrontController</servlet-class>
-        <load-on-startup>1</load-on-startup> <!--initialize on startup rather than wait until first request-->
+        <load-on-startup>1</load-on-startup>
+        <!--initialize on startup rather than wait until first request-->
         <multipart-config>
             <!--Use default location on server deployment drive rather than specify <location> here, FrontController will delete it after use anyway-->
-            <max-file-size>20971520</max-file-size> <!--20MB.  We coerce images down to a smaller size for storage, so we are OK with a large max file size for upload-->
-        </multipart-config>        
+            <max-file-size>20971520</max-file-size>
+            <!--20MB.  We coerce images down to a smaller size for storage, so we are OK with a large max file size for upload-->
+        </multipart-config>
+    </servlet>
+    <servlet>
+        <servlet-name>Faces Servlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>FrontController</servlet-name>
-        <url-pattern>/stepup</url-pattern>        
+        <url-pattern>/stepup</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Faces Servlet</servlet-name>
+        <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
@@ -74,11 +85,9 @@
             <web-resource-name>
                 StepUpPages
             </web-resource-name>
-            <url-pattern>/images/*</url-pattern>
-            <url-pattern>/pages/*</url-pattern> <!--Alternative implementation would be to move all these files under WEB-INF, but the wildcards here make this pretty maintanence free and I feel a 'no permissions' response is better than 'not found'-->
-            <url-pattern>/StepUp.css</url-pattern>
-        </web-resource-collection>        
-        <auth-constraint/> <!--Disallow any direct access to these items, they will be served up according to login/session authentication by Front Controller instead-->                
+            <url-pattern>/pages/*</url-pattern><!--Alternative implementation would be to move all these pages under WEB-INF, but the wildcards here make this pretty maintanence free and I feel a 'no permissions' response is better than 'not found'-->
+        </web-resource-collection>
+        <auth-constraint/>
+        <!--Disallow any direct access to these items, they will be served up according to login/session authentication by Front Controller instead-->
     </security-constraint>
-        
 </web-app>

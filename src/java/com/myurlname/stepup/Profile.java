@@ -2,8 +2,10 @@ package com.myurlname.stepup;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import org.apache.commons.lang3.StringEscapeUtils;
+import java.util.List;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
 /**
@@ -35,6 +37,7 @@ public class Profile implements Serializable {
     private int profileId;
     private int userId;
     private String errorMessage;
+    private List<String> errors;
     private byte[] imageData;
     private String imageType;
 
@@ -51,7 +54,8 @@ public class Profile implements Serializable {
         this.emailSubscribe = r.getEmailSubscribe();
         this.textSubscribe = r.getTextSubscribe();
         joinDate = new Date();
-        errorMessage = null;
+        errorMessage = "";
+        errors = new ArrayList<>();
     }
 
     public Profile (User user,
@@ -69,7 +73,8 @@ public class Profile implements Serializable {
         this.emailSubscribe = emailSubscribe;
         this.textSubscribe = textSubscribe;
         joinDate = new Date();
-        errorMessage = null;
+        errorMessage = "";
+        errors = new ArrayList<>();
     }
 
     public Profile (User user,
@@ -77,36 +82,17 @@ public class Profile implements Serializable {
                     String phone, String goal, String reward,
                     String emailSubscribe, String textSubscribe,
                     Date joinDate) {
-        this.userId = user.getUserId();
-        this.username = user.getUsername();
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.goal = goal;
-        this.reward = reward;
-        this.emailSubscribe = emailSubscribe;
-        this.textSubscribe = textSubscribe;
+        this (user,firstName, lastName, email,phone,  goal,  reward,
+                     emailSubscribe,textSubscribe);
         this.joinDate = joinDate;
-        errorMessage = null;
     }
 
     public Profile (int userId, String userName,
                     String firstName, String lastName, String email,
                     String phone, String goal, String reward,
                     String emailSubscribe, String textSubscribe) {
-        this.userId = userId;
-        this.username = userName;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phone = phone;
-        this.goal = goal;
-        this.reward = reward;
-        this.emailSubscribe = emailSubscribe;
-        this.textSubscribe = textSubscribe;
-        joinDate = new Date();
-        errorMessage = null;
+        this(new User (userName, userId, 0, 0),firstName, lastName, 
+             email,phone, goal, reward, emailSubscribe, textSubscribe );
     }
 
     public boolean validateRegistration () {
@@ -130,18 +116,18 @@ public class Profile implements Serializable {
 
             if ((!LoginBean.validatePassword(password1))
                 || (!password1.equals(password2)))
-                    setErrorMessage(this.errorMessage + "password");
+                    addErrorSource("password");
         }
         if (firstName != null) {
             firstName = firstName.trim();
         }
         if ((firstName == null) || (!firstName.matches("^[A-Za-z. -]{1,20}$")))
-            setErrorMessage(this.errorMessage + "firstname");
+            addErrorSource("firstname");
         if (lastName != null) {
             lastName = lastName.trim();
         }
         if ((lastName == null) || (!lastName.matches("^[A-Za-z -']{1,30}$")))
-            setErrorMessage(this.errorMessage + "lasttname");
+            addErrorSource("lasttname");
 
         if (email != null) {
             email = email.trim();
@@ -149,7 +135,7 @@ public class Profile implements Serializable {
         if ((email != null) && (email.length()>0)) {
             EmailValidator ev = EmailValidator.getInstance(false);
             if (!ev.isValid (email))
-                setErrorMessage(this.errorMessage + "email");
+                addErrorSource("email");
         }
         if (phone != null) {
             phone = phone.trim();
@@ -166,14 +152,14 @@ public class Profile implements Serializable {
                                        phone.substring(6,10));
             }
             else
-                setErrorMessage(this.errorMessage+ "phone");
+                addErrorSource("phone");
         }
         if (goal != null) {
             goal = goal.trim();
         }
         if ((goal != null) && (goal.length()>0)) {
             if (goal.length()>200)
-                setErrorMessage(this.errorMessage+ "goal");
+                addErrorSource("goal");
             else {
                 goal = StringEscapeUtils.escapeHtml4(goal);
                 goal = goal.replace("'", "&#39;");
@@ -184,16 +170,14 @@ public class Profile implements Serializable {
         }
         if ((reward != null) && (reward.length()>0)) {
             if (reward.length() > 200)
-                setErrorMessage(this.errorMessage+ "reward");
+                addErrorSource("reward");
             else {
                 reward = StringEscapeUtils.escapeHtml4(reward);
                 reward = reward.replace("'", "&#39;");
             }
         }
 
-        if (getErrorMessage() == null)
-            return true;
-        return false;
+        return (getErrorMessage()==null);         
 
     }
 
@@ -293,23 +277,26 @@ public class Profile implements Serializable {
 
     public String getErrorMessage() {
         //return a human readable version of the error
-        String text = "Problems with the ";
-        if (errorMessage == null) return null;
-        if (errorMessage.contains("username")) text += "username field";
-        else if (errorMessage.contains("password")) text += "password";
-        else if (errorMessage.contains("firstname")) text += "first name";
-        else if (errorMessage.contains("lastname")) text += "lastname";
-        else if (errorMessage.contains("email")) text += "email";
-        else if (errorMessage.contains("phone")) text += "phone";
-        else if (errorMessage.contains("goal")) text += "goal";
-        else if (errorMessage.contains("reward")) text += "reward";
-        else
-            return null;
-        return text;
+        if (errors.isEmpty()) return null;
+        else {
+            StringBuilder sb = new StringBuilder("Required information missing and/or entered incorrectly: ");
+            for (int i=0; i< errors.size(); i++) {
+                if (i == 0) sb.append (errors.get(i));
+                else {
+                sb.append(",");
+                sb.append(errors.get(i));
+                }
+            }
+            return sb.toString();
+        }
     }
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+    
+    public void addErrorSource(String newError) {
+        this.errors.add(newError);
     }
 
     public String getUsername() {

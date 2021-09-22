@@ -1,0 +1,2 @@
+        <h2 class="flash">${flash}</h2>
+        <h3 class="flashsmall">${flashmall}</h3>

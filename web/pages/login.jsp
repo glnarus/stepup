@@ -4,7 +4,9 @@
     Author     : gabriel
 --%>
 
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@page contentType="text/html" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -15,7 +17,7 @@
     <body>
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>
         <h1>Log in to StepUp&trade;</h1>
-        <h2 class="flash">${flash}</h2>
+        <%@ include file="flash.jspf"%>          
         <form method="POST" action="stepup">
             <input type="hidden" name="action" value="login"/>
             <table id="logintable">

@@ -114,10 +114,7 @@ public class FrontController extends HttpServlet {
             StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
             User user = db.authenticate(username, password);
             if (user == null) {
-                String error = db.getLastError();
-                request.setAttribute("flash",
-                        (error == null? "No user/password combination found" :
-                                                                      error));
+                request.setAttribute("flash", "User and/or password combination not recognized");
                 return "login";
             } else {
                 request.getSession().setAttribute("user", user);
@@ -179,16 +176,15 @@ public class FrontController extends HttpServlet {
                                                    textSubscribe);
         Profile profile = new Profile (r);
         if (!profile.validateRegistration()) {
-            request.setAttribute("flash", "Required information not entered correctly" + profile.getErrorMessage());
+            request.setAttribute("flash", profile.getErrorMessage());
             request.setAttribute("bean", r);
-            request.setAttribute("problems", profile.getErrorMessage());
             return "register";
         }
         //Data is valid, let's update/create the profile!
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         user = db.register(profile);
         if (user == null) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Unable to save new user, please check data and retry");       
             request.setAttribute("bean", r);
             return "register";
         }
@@ -210,14 +206,14 @@ public class FrontController extends HttpServlet {
         //get all the achievements for the activity board...
         List <Achievement> achievements = db.getAllAchievementsByDate();
         if (achievements == null) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Unable to read all dashboard achievments, please retry");       
             return "dashboard";
         }
         request.getSession().setAttribute("achievementsAll", achievements);
         //get all the posts for the bulletin board...
         List <Post> posts = db.getSortedPostsByDate();
         if (posts == null) {
-            request.setAttribute("flash", db.getLastError());
+            flashDbError (request, db,"Unable to read all dashboard posts, please retry");    
             return "dashboard";
         }
         request.getSession().setAttribute("posts", posts);
@@ -249,7 +245,7 @@ public class FrontController extends HttpServlet {
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         int postId = db.createPost(post);
         if (postId < 0) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Unable to confirm post is saved, please retry");    
             return "dashboard";
         }
         //send email out if people are following this post
@@ -279,18 +275,18 @@ public class FrontController extends HttpServlet {
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         User subject = db.getUserByUserName(profileFor);
         if (subject == null) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Problem looking up username for profile access, please retry");    
             return "profile";
         }
         Profile profile = db.getProfileFor(subject);
         if (profile == null) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Problem looking up profile, please retry");    
             return "profile";
         }
 
         List achievements = db.getAchievementsByDate(subject.getUsername());
         if (achievements == null)  {
-            request.setAttribute ("flash",db.getLastError());
+            flashDbError (request, db,"Problem looking up profile, please retry");    
             return "profile";
         }
         request.getSession().setAttribute("subjectachievements", achievements);
@@ -300,7 +296,7 @@ public class FrontController extends HttpServlet {
             //determine if this User is following the subject
             Boolean isFollowing = db.checkForFollowing(user.getUserId(), subject.getUserId());
             if (isFollowing == null) {
-                request.setAttribute("flash", db.getLastError());
+                flashDbError (request, db,"Problem looking up profile, please retry");    
                 return "profile";
             }
             else if (isFollowing)
@@ -328,7 +324,7 @@ public class FrontController extends HttpServlet {
         if (request.getMethod().equals("GET")) {
             Profile profile = db.getProfileFor(user);
             if (profile == null) {
-                request.setAttribute("flash",db.getLastError());
+                flashDbError (request, db,"Problem looking up profile, please retry");    
                 return "editprofile";
             }
             RegistrationBean r = new RegistrationBean ("not_editable",
@@ -369,16 +365,15 @@ public class FrontController extends HttpServlet {
                                                    textSubscribe);
         Profile profile = new Profile (r);
         if (!profile.validateRegistration()) {
-            request.setAttribute("flash", "Required information not entered correctly" + profile.getErrorMessage());
+            request.setAttribute("flash", profile.getErrorMessage());
             request.setAttribute("bean", r);
-            request.setAttribute("problems", profile.getErrorMessage());
             return "editprofile";
         }
         //data is ready to be sent to the database.  do NOT update the username
         //or password of course.
         User userEdited = db.updateProfile(user, profile);
         if (userEdited == null) {
-            request.setAttribute("flash", db.getLastError());
+            flashDbError (request, db,"Problem updating profile, please retry");    
             request.setAttribute("bean", r);
             return "editprofile";
         }
@@ -386,7 +381,7 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("user", userEdited);
         request.getSession().setAttribute("subject", userEdited);
         request.setAttribute("bean", r);
-        return "editprofile";
+        return "profile";
     }
 
     private String editAchievement (HttpServletRequest request) {
@@ -422,7 +417,7 @@ public class FrontController extends HttpServlet {
                 //remove the achievement
                 StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
                 if (db.removeAchievement(achToEdit) == null) {
-                    request.setAttribute("flash", db.getLastError());
+                    flashDbError (request, db,"Problem removing achievement, please check and retry if necessary");    
                     return "editAchievement";
                 }
                 request.setAttribute("flash", "Achievement deleted successfully");
@@ -431,7 +426,7 @@ public class FrontController extends HttpServlet {
                 //here instead of calling the dbase again.
                 List achievements = db.getAchievementsByDate(user.getUsername());
                 if (achievements == null)  {
-                    request.setAttribute ("flash",db.getLastError());
+                    flashDbError (request, db,"Problem looking up achievements, please retry");    
                     return "home";
                 }
                 request.getSession().setAttribute("achievements", achievements);
@@ -482,7 +477,7 @@ public class FrontController extends HttpServlet {
             //Achievement ID or date recorded
             Achievement updatedAch = db.updateAchievement(modAch);
             if (updatedAch == null) {
-                request.setAttribute("flash", db.getLastError());
+                flashDbError (request, db,"Problem updating achievement, please check and retry if necessary");    
                 request.setAttribute("bean", bean);
                 return "editAchievement";
             }
@@ -490,7 +485,7 @@ public class FrontController extends HttpServlet {
             //here instead of calling the dbase again.
             List achievements = db.getAchievementsByDate(user.getUsername());
             if (achievements == null)  {
-                request.setAttribute ("flash",db.getLastError());
+                flashDbError (request, db,"Problem looking up achievements, please retry");    
                 request.getSession().removeAttribute("achievements");
                 return "home";
             }
@@ -541,9 +536,9 @@ public class FrontController extends HttpServlet {
                     user.setBadge(badge);
             }
             //Can be more efficient about the above by adding Achievement, in order
-            //here instead of calling the dbase again.
+            //here for the six week instead of calling the dbase again.
             if (achievements == null)  {
-                request.setAttribute ("flash",db.getLastError());
+                flashDbError (request, db,"Problem looking up achievements, please retry");    
                 request.setAttribute("bean", bean);
             }
             request.getSession().setAttribute("achievements", achievements);
@@ -556,7 +551,7 @@ public class FrontController extends HttpServlet {
             return "home";
         }
         else {
-            request.setAttribute ("flash",db.getLastError());
+            flashDbError (request, db,"Problem adding achievement, please check and retry if necessary");    
             request.setAttribute("bean", bean);
             return "home";
         }
@@ -607,20 +602,19 @@ public class FrontController extends HttpServlet {
         StepUpDAO db = (StepUpDAO)getServletContext().getAttribute("db");
         db.updateImage(user.getUserId(), pic.getContentType(), pic.getData());
         if (db.getLastError() != null) {
-            request.setAttribute("flash", db.getLastError());    
+            flashDbError (request, db,"Problem updating profile image, please retry");     
             pic.close();
             try {filePart.delete();} catch (Exception ignored) {}            
             return "uploadPic";
         }
         Profile p = db.getProfileFor(user);
         if (db.getLastError() != null) {
-            request.setAttribute("flash", db.getLastError());
+            flashDbError (request, db,"Problem refreshing profile with new image, please retry"); 
             pic.close();
             try {filePart.delete();} catch (Exception ignored) {}            
             return "uploadPic";
         }
         user.setProfile(p);  
-        filePart.delete();
     } catch (IOException | ServletException e) {
         request.setAttribute("flash", e.getMessage());
         if (pic != null) pic.close();
@@ -640,14 +634,14 @@ public class FrontController extends HttpServlet {
         String toFollowIdString = request.getParameter("id");
         try {toFollowId = Integer.parseInt(toFollowIdString);}
         catch (NumberFormatException nfe) {
-            request.setAttribute("flash","Incorrect follower ID parameter");
+            request.setAttribute("flash","Unrecognized user to follow");
             return "profile";
         }
         //data inputs look good, so let's establish the follower relationship
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         int result = db.startFollowing(user.getUserId(), toFollowId);
         if (result < 0) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Problem following user, please retry"); 
             return "profile";
         }
         request.getSession().setAttribute("following", "true");
@@ -662,14 +656,14 @@ public class FrontController extends HttpServlet {
         String toFollowIdString = request.getParameter("id");
         try {toFollowId = Integer.parseInt(toFollowIdString);}
         catch (NumberFormatException nfe) {
-            request.setAttribute("flash","Incorrect follower ID parameter");
+            request.setAttribute("flash","Unrecognized user to unfollow");
             return "profile";
         }
         //data inputs look good, so let's destroy the follower relationship
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         int result = db.stopFollowing(user.getUserId(), toFollowId);
         if (result < 0) {
-            request.setAttribute("flash",db.getLastError());
+            flashDbError (request, db,"Problem unfollowing user, please retry"); 
             return "profile";
         }
         request.getSession().setAttribute("following", null);
@@ -719,7 +713,14 @@ public class FrontController extends HttpServlet {
 
 
     }
-
+    
+    private static void flashDbError (HttpServletRequest request, StepUpDAO db, String prefix) {
+        if (db.getLastError()!= null) {
+            request.setAttribute("flash",prefix);
+            request.setAttribute("flashsmall",db.getLastError());        
+        }
+    }    
+    
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

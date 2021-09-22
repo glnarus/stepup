@@ -11,7 +11,7 @@
     <body>
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1><u>${user}</u>'s Profile</h1>
-        <h2 class="flash">${flash}</h2>      
+        <%@ include file="flash.jspf"%>     
           <form method="POST" action="<c:url value='stepup'/>">
             <input type="hidden" name="action" value="editprofile"/>
             <table id="formtable">               

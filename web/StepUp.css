@@ -16,7 +16,7 @@ div.footer {
   font-weight:bold;
   font-family: courier, monospace;
   font-size: 60%;
-  color: dark gray;
+  color: gray;
 }
 
 div.smalltext {
@@ -108,6 +108,7 @@ border-radius: 20px;
 }
              
 .flash {color: red; font-size: 80%;}
+.flashsmall {color: red; font-size: 65%;}
 
 #imagelogo {border:5px solid white;}
 

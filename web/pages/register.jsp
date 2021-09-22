@@ -10,7 +10,7 @@
     <body>  
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1>Register for StepUp&trade;</h1>
-        <h2 class="flash">${flash}</h2>
+        <%@ include file="flash.jspf"%>  
         <form method="POST" action="<c:url value='stepup'/>">
             <input type="hidden" name="action" value="register"/>
             <table id="formtable">

@@ -48,7 +48,7 @@
                </c:otherwise>
            </c:choose>            
         <h2>Enter a new achievement</h2>
-        <h2 class="flash">${flash}</h2>
+        <%@ include file="flash.jspf"%>  
         <form method="POST" action="<c:url value='stepup'/>" id="achievementform">     
             <fieldset>
             <table id="formtable">

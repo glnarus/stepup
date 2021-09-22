@@ -11,7 +11,7 @@
     <body>
         <img id="imagelogo" src="images/logo_sm.jpg" align="left"/>        
         <h1>StepUp&trade; Community Dashboard</h1>
-        <h2 class="flash">${flash}</h2>
+        <%@ include file="flash.jspf"%>        
         <h2>Activity Stream</h2>
         <div class="scrollboxBig">
         <c:forEach var="achievement" items="${achievementsAll}">
