@@ -184,7 +184,9 @@ public class FrontController extends HttpServlet {
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
         user = db.register(profile);
         if (user == null) {
-            flashDbError (request, db,"Unable to save new user, please check data and retry");       
+            String message = db.getLastError().contains("duplicate key")?"Username already exists, please pick another"
+                                                                        :"Unable to save new user, please check data and retry";
+            flashDbError (request, db,message);       
             request.setAttribute("bean", r);
             return "register";
         }

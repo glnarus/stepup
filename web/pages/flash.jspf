@@ -1,2 +1,4 @@
         <h2 class="flash">${flash}</h2>
-        <h3 class="flashsmall">${flashmall}</h3>
+        <c:if test="${not empty flashsmall}">              
+        <h3 class="flashsmall">The gory details: ${flashsmall}</h3>
+        </c:if>

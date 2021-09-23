@@ -107,8 +107,8 @@ border: 2px solid;
 border-radius: 20px;
 }
              
-.flash {color: red; font-size: 80%;}
-.flashsmall {color: red; font-size: 65%;}
+.flash {color: red; font-size: 85%; font-weight: bold;}
+.flashsmall {color: darksalmon; font-size: 65%; font-style: italic;}
 
 #imagelogo {border:5px solid white;}
 
