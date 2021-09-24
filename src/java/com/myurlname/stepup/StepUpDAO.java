@@ -57,7 +57,7 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("id"),
+                user = new User(rs.getString("username"), rs.getInt("userid"),
                                 rs.getInt("badgelevel"),
                                 rs.getInt("badgehabit"));
             }
@@ -89,8 +89,7 @@ public class StepUpDAO {
     String userSql = "INSERT INTO USERS (username,password) VALUES (?,?)";
     String profSql = "INSERT INTO PROFILES (firstname,lastname,";
     profSql += "email,phone,userid,goal,reward,joindate) VALUES (?,?,?,?,?,?,?,?)";
-    String updateSql = "UPDATE Users SET profileid = ? WHERE id = ?";
-    PreparedStatement pstatUser = null, pstatProf = null, pstatUpdate = null;
+    PreparedStatement pstatUser = null, pstatProf = null;
     ResultSet userRs = null, profRs = null;
     int userId = 0, profileId = 0;
     User user = null;
@@ -121,10 +120,6 @@ public class StepUpDAO {
         profRs = pstatProf.getGeneratedKeys();
         if (profRs.next())
             profileId = profRs.getInt(1);
-        pstatUpdate = CONN.prepareStatement(updateSql);
-        pstatUpdate.setInt(1, profileId);
-        pstatUpdate.setInt(2, userId);
-        pstatUpdate.executeUpdate();
         lastError = null;
         user = new User(p.getUsername(), userId,
                         Badge.LOWEST_LEVEL, Badge.LOWEST_HABIT, p);
@@ -139,13 +134,11 @@ public class StepUpDAO {
             try { pstatUser.close(); } catch (SQLException sqle) {}
         if (pstatProf != null)
             try { pstatProf.close(); } catch (SQLException sqle) {}
-        if (pstatUpdate != null)
-            try { pstatUpdate.close(); } catch (SQLException sqle) {}
     }
     return user;
 }
 
-    /** Reads a profile for a given user ID and creates a Profile object
+    /** Reads a profile for a given userID and creates a Profile object
      * based on the Profile table.
      * @param user user object for the profile you want to pull up
      * @return Profile object (null if error)
@@ -176,7 +169,7 @@ public class StepUpDAO {
                 //let's get rid of that if possible
                 if (profile.getPhone() != null) 
                     profile.setPhone(profile.getPhone().trim());
-                profile.setProfileId(rsData.getInt("id"));
+                profile.setProfileId(rsData.getInt("profileid"));
                 Blob picBlob = rsData.getBlob("picture");
                 if (picBlob != null) {
                     profile.setImageData(picBlob.getBytes(1,(int)picBlob.length()));
@@ -197,7 +190,7 @@ public class StepUpDAO {
     }
 
     /** Writes a pre-validated Achievement to the database and returns
-     * an ID for that achievement.  If anything goes wrong, the ID will
+     * an acheivementID for that achievement.  If anything goes wrong, the achievementID will
      * be negative and you can find error information using getLastError()
      * @param achievement object for the achievement
      * @return achievementID (or -1 if error)
@@ -244,12 +237,12 @@ public class StepUpDAO {
 
     /** Updates the badge level/habit for a user.  Use this after adding
      * an achievement, for example.
-     * @param userId user ID value
+     * @param userId userID value
      * @param Badge object for the badge levels
      * @return -1 if error, anything else for pass
      */
     public int updateBadge (int userId, Badge badge) {
-        String sql = "UPDATE Users SET badgelevel=?,badgehabit=? WHERE id=?";
+        String sql = "UPDATE Users SET badgelevel=?,badgehabit=? WHERE userid=?";
         PreparedStatement pstat = null;
         try {
             pstat = CONN.prepareStatement(sql);
@@ -268,10 +261,10 @@ public class StepUpDAO {
     }
 
     /**
-     * Creates a new Post in the database.  Returns the post ID if successful
+     * Creates a new Post in the database.  Returns the postID if successful
      * otherwise, returns -1
      * @param post (Post object)
-     * @return post ID or -1 if unsuccessful
+     * @return postID or -1 if unsuccessful
      */
     public int createPost(Post post) {
         //front controller should do this, but double check to be sure
@@ -335,7 +328,7 @@ public class StepUpDAO {
             pstat.setInt(9, user.getUserId());
             pstat.executeUpdate();
             //this was successful, so let's update the user's profile object,
-            //need to fill in the profile ID & joinDate
+            //need to fill in the profileID & joinDate from dbase as well as read back to verify
             profile = getProfileFor (user);
             if (profile == null) return null;
             user.setProfile(profile);
@@ -352,14 +345,14 @@ public class StepUpDAO {
 
 
     /** Updates an Achievement for a user.
-     * Note that the date recorded and ID fields will never change.
-     * @param ach Achievement object that holds the ID and fields to which
+     * Note that the date recorded and achievementID fields will never change.
+     * @param ach Achievement object that holds the achievementID and fields to which
      * to update in the Achievement dbase table.
      * @return null if error, returns back the ach object if successful
      */
     public Achievement updateAchievement (Achievement ach) {
         String sql = "UPDATE ACHIEVEMENTS SET exercise=?,duration=?,"
-                + "intensity=?,score=?,notes=?,dateoccurred=? WHERE id = ?";
+                + "intensity=?,score=?,notes=?,dateoccurred=? WHERE achievementid = ?";
         PreparedStatement pstat = null;
         try {
             pstat = CONN.prepareStatement(sql);
@@ -382,12 +375,12 @@ public class StepUpDAO {
     }
 
     /** Removes an achievement for a user.
-     * @param ach Achievement object that holds the ID of the achievement
+     * @param ach Achievement object that holds the achievementID of the achievement
      * to delete.
      * @return null if error, returns back the ach object if successful
      */
     public Achievement removeAchievement (Achievement ach) {
-        String sql = "DELETE FROM ACHIEVEMENTS WHERE id = " +
+        String sql = "DELETE FROM ACHIEVEMENTS WHERE achievementid = " +
                                                 ach.getAchievementId();
         Statement stat = null;
         try {
@@ -405,14 +398,14 @@ public class StepUpDAO {
 
     public User getUserById (int userId) {
         User user = null;
-        String sql = "SELECT * FROM USERS WHERE ID = " + userId;
+        String sql = "SELECT * FROM USERS WHERE USERID = " + userId;
         Statement stat = null;
         ResultSet rs = null;
         try {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("id"),
+                user = new User(rs.getString("username"), rs.getInt("userid"),
                                 rs.getInt("badgelevel"),
                                 rs.getInt("badgehabit"));
             }
@@ -443,7 +436,7 @@ public class StepUpDAO {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("id"),
+                user = new User(rs.getString("username"), rs.getInt("userid"),
                                 rs.getInt("badgelevel"),
                                 rs.getInt("badgehabit"));
             }
@@ -470,7 +463,7 @@ public class StepUpDAO {
     public List<Achievement> getAchievementsByDate(String username) {
         List<Achievement> achievements = new ArrayList<>();
         String sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
-        sql += "Users.id WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
+        sql += "Users.userid WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
         sql = String.format(sql, username);
         Statement stat = null;
         ResultSet rs = null;
@@ -485,12 +478,12 @@ public class StepUpDAO {
                 String notes = rs.getString("notes");
                 Date dateOccurred = new Date(rs.getLong("dateoccurred"));
                 Date dateRecorded = new Date(rs.getLong("daterecorded"));
-                int id = rs.getInt("id");
+                int achievementID = rs.getInt("achievementid");
                 Activity objActivity = new Activity (exercise);
                 Intensity objIntensity = new Intensity (intensity);
 
                 Achievement achievement = new Achievement (objActivity, minutes,
-                     objIntensity, score, notes, dateOccurred, dateRecorded,id);
+                     objIntensity, score, notes, dateOccurred, dateRecorded,achievementID);
                 User user = getUserById(rs.getInt("userid"));
                 achievement.setUser(user);
                 achievements.add(achievement);
@@ -525,7 +518,7 @@ public class StepUpDAO {
     public List<Post> getUsersPostsByDate (String username) {
         List<Post> posts = new ArrayList<>();
         String sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
-        sql += "Users.id WHERE username LIKE '%s' ORDER BY postdate DESC";
+        sql += "Users.userid WHERE username LIKE '%s' ORDER BY postdate DESC";
         sql = String.format(sql, username);
         Statement stat = null;
         ResultSet rs = null;
@@ -536,7 +529,7 @@ public class StepUpDAO {
                 String content = rs.getString("content");
                 int authorId = rs.getInt("authorid");
                 Date postDate = new Date(rs.getLong("postdate"));
-                int postId = rs.getInt("id");
+                int postId = rs.getInt("postid");
                 String authorName = rs.getString("username");
                 Post post = new Post (content, postDate, authorName, authorId,
                                     postId);
@@ -584,8 +577,8 @@ public class StepUpDAO {
 
     /**
      *
-     * @param userId - the ID of the logged in User
-     * @param followingId - the ID of the person the User may or may not be followign
+     * @param userId - the userID of the logged in User
+     * @param followingId - the followingID of the person the User may or may not be following
      * @return Boolean object (true) if User is following 'followingId'.
      * False otherwise.  null if there's a dbase problem
      */
@@ -625,17 +618,17 @@ public class StepUpDAO {
      * Inserts a row into the Followers table to allow a user to follow another
      * user's actions.  Method will check if a relationship already exists and
      * do nothing if it does.
-     * @param userId - the logged in User's ID
-     * @param followingId - the person's user ID that the logged in User wants
+     * @param userId - the logged in UserID
+     * @param followingId - the person's userID that the logged in User wants
      * to follow
-     * @return ID of new row in Followers table if all goes well, -1 if
+     * @return followinginstanceID of new row in Followers table if all goes well, -1 if
      * there's an error.
      */
     public int startFollowing (int userId, int followingId) {
         //front controller should do this, but double check to be sure
         if (checkForFollowing(userId,followingId)) return 0;
         if ((getUserById(userId) == null) || (getUserById(followingId) == null)) {
-            lastError = "UserId or following Id does not exist";
+            lastError = "UserID or following userID does not exist";
             return -1;
         }
         String sql = "INSERT INTO Followers (beingfollowedid,followerid) ";
@@ -671,8 +664,8 @@ public class StepUpDAO {
      * Removes a row into the Followers table to stop a user from following
      * another user's actions.  Method will check if a relationship already
      * exists and do nothing if it does not.
-     * @param userId - the logged in User's ID
-     * @param followingId - the person's user ID that the logged in User wants
+     * @param userId - the logged in UserID
+     * @param followingId - the person's userID that the logged in User wants
      * to stop following
      * @return 0 if everything goes well, -1 if there's an error.
      */

@@ -12,14 +12,13 @@ DROP TABLE Followers;
 DROP TABLE Achievements;
 DROP TABLE Users;
 
---must create users first since you don't have to specify a profileId
+--must create users first, since it is foreign key for other tables
 CREATE TABLE Users (
     username VARCHAR(15) NOT NULL UNIQUE,
     password VARCHAR(15) NOT NULL,
     badgelevel int,
     badgehabit int,
-    id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    profileId INT
+    userid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 --create profiles second, then after created put the key in the user dbase row
@@ -36,32 +35,29 @@ CREATE TABLE Profiles (
     pictype VARCHAR(30),
     emailsubscribe BOOLEAN,
     textsubscribe BOOLEAN,
-    id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    profileid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 Alter Table GNARUS.PROFILES
 Add FOREIGN KEY (USERID)
-References GNARUS.USERS (id);  
+References GNARUS.USERS (userid);  
 
---setup foreign key relationship now that Profiles exists
-Alter Table GNARUS.USERS
-Add FOREIGN KEY (profileId)
-References GNARUS.Profiles (id);
 
 --many followers can track many leaders
 CREATE TABLE Followers (
     beingfollowedid INT NOT NULL,
     followerid INT NOT NULL,    
-    ID INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    followinginstanceID INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 --setup foreign key relationship for followerid and leaderid
+--This is a linking table for a many to many relationship
 Alter Table GNARUS.Followers
 Add FOREIGN KEY (beingfollowedid)
-References GNARUS.USERS (id); 
+References GNARUS.USERS (userid); 
 Alter Table GNARUS.FOLLOWERS
 Add Foreign Key (followerid)
-References GNARUS.USERS (id); 
+References GNARUS.USERS (userid); 
 
 --one user to many achievements
 CREATE TABLE Achievements (
@@ -73,24 +69,24 @@ CREATE TABLE Achievements (
     userid INT NOT NULL,
     dateoccurred BIGINT NOT NULL,
     daterecorded BIGINT NOT NULL,
-    id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    achievementid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 Alter Table GNARUS.Achievements
 Add FOREIGN KEY (userid)
-References GNARUS.Users(id);
+References GNARUS.Users(userid);
 
 
 CREATE TABLE Posts (
     content VARCHAR(280) NOT NULL,
     authorid INT NOT NULL,
     postdate BIGINT NOT NULL,
-    id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    postid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
 Alter Table GNARUS.Posts
 Add FOREIGN KEY (authorid)
-References GNARUS.USERS (id);
+References GNARUS.USERS (userid);
 
 ----> Start here with the adds
 
@@ -104,9 +100,9 @@ INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
     (1383177600000, 'Jill', 'Jack', 'jj@nowhere.com',2),
     (1358208000000, 'Curious', 'George', 'monkey@tree.net',3);
 
-UPDATE USERS SET profileId=1 WHERE id=1;
-UPDATE USERS SET profileId=2 WHERE id=2;
-UPDATE USERS SET profileId=3 WHERE id=3;
+UPDATE USERS SET profileId=1 WHERE userid=1;
+UPDATE USERS SET profileId=2 WHERE userid=2;
+UPDATE USERS SET profileId=3 WHERE userid=3;
 
 INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred, daterecorded) VALUES
     ('Running', 45, 'Strenuous', 0.33, 'Really hard today, very warm',1,1341360000000,1341360000000),

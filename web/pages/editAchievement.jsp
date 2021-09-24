@@ -67,7 +67,7 @@
             </table>
             </fieldset>
         </form>        
-        <a href="stepup?action=editachievement&id=${achToEdit.achievementId}&delete=yes"><em>Delete Achievement</em></a>
+        <a href="<c:url value='stepup?action=editachievement&id=${achToEdit.achievementId}&delete=yes'/>"><em>Delete Achievement</em></a>
         <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
             <a href="<c:url value='stepup?action=dashboard'/>">Group Dashboard</a> |
             <a href="<c:url value='stepup?action=profile&profilefor=${user}'/>">View My Profile</a> |            

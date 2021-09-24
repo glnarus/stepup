@@ -62,10 +62,10 @@
                 <p><small>Contact info fields are considered private.</small>
                 <c:choose>
                     <c:when test="${following == null}">
-                        <p><a href="stepup?action=follow&id=${subject.userId}">Follow ${subject}'s fitness activity</a>
+                        <p><a href="<c:url value ='stepup?action=follow&id=${subject.userId}'/>">Follow ${subject}'s fitness activity</a>
                     </c:when>
                     <c:otherwise>
-                        <p><a href="stepup?action=unfollow&id=${subject.userId}">Turn off following ${subject}</a>
+                        <p><a href="<c:url value='stepup?action=unfollow&id=${subject.userId}'/>">Turn off following ${subject}</a>
                     </c:otherwise>
                 </c:choose>
                 
