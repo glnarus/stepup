@@ -1,10 +1,7 @@
 --remove foreign links so we can drop the tables 
 Alter Table GNARUS.Profiles DROP userid;
-Alter Table GNARUS.Followers DROP beingfollowedid;
-Alter Table GNARUS.Followers DROP followerid;
 Alter Table GNARUS.Achievements DROP userid;
 Alter Table GNARUS.Posts DROP authorid;
-Alter Table GNARUS.Users DROP profileId;
 
 DROP TABLE Posts;
 DROP TABLE Profiles;
@@ -43,11 +40,12 @@ Add FOREIGN KEY (USERID)
 References GNARUS.USERS (userid);  
 
 
---many followers can track many leaders
+--many followers can track many leaders, and vice versa.  This is a linking table
+--resolving the many to many relationship.  Note composite primary key helps the dbase
+--ensure no duplicate entries of follower -> leader records.
 CREATE TABLE Followers (
-    beingfollowedid INT NOT NULL,
-    followerid INT NOT NULL,    
-    followinginstanceID INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+    beingfollowedid INT NOT NULL, 
+    followerid INT NOT NULL, PRIMARY KEY (beingfollowedid, followerid)
 );
 
 --setup foreign key relationship for followerid and leaderid
@@ -100,9 +98,6 @@ INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
     (1383177600000, 'Jill', 'Jack', 'jj@nowhere.com',2),
     (1358208000000, 'Curious', 'George', 'monkey@tree.net',3);
 
-UPDATE USERS SET profileId=1 WHERE userid=1;
-UPDATE USERS SET profileId=2 WHERE userid=2;
-UPDATE USERS SET profileId=3 WHERE userid=3;
 
 INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, dateoccurred, daterecorded) VALUES
     ('Running', 45, 'Strenuous', 0.33, 'Really hard today, very warm',1,1341360000000,1341360000000),
