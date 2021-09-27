@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import com.gabriel.hashingtool.*;
 
 /**
  * StepUpDAO is a data access object for the StepUp Web App.
@@ -46,20 +47,23 @@ public class StepUpDAO {
      * @param username
      * @param password
      * @return User object with username and userId set
-     */
+     */   
     public User authenticate (String username, String password) {
         User user = null;
-        String sql = "SELECT * FROM USERS WHERE USERNAME = '" +
-                     username + "' AND PASSWORD = '" + password + "'";
+        HashingTool ht =  new Sha256Hasher();     
+        String sql = "SELECT * FROM USERS WHERE USERNAME = '" + username + "'";
         Statement stat = null;
         ResultSet rs = null;
         try {
             stat = CONN.createStatement();
             rs = stat.executeQuery(sql);
             if (rs.next()) {
-                user = new User(rs.getString("username"), rs.getInt("userid"),
-                                rs.getInt("badgelevel"),
-                                rs.getInt("badgehabit"));
+                String storedHash = rs.getString("password");
+                if (ht.isMatch(password, storedHash)) {
+                    user = new User(rs.getString("username"), rs.getInt("userid"),
+                                    rs.getInt("badgelevel"),
+                                    rs.getInt("badgehabit"));
+                }
             }
             lastError = null;
         } catch (SQLException sqle) {
@@ -93,13 +97,14 @@ public class StepUpDAO {
     ResultSet userRs = null, profRs = null;
     int userId = 0, profileId = 0;
     User user = null;
+    HashingTool ht = new Sha256Hasher();
     if (!p.validateRegistration()) return null; //controller should already
                                             //do this, but check anyway
     try {
         pstatUser = CONN.prepareStatement(userSql,
                                           Statement.RETURN_GENERATED_KEYS);
         pstatUser.setString(1, p.getUsername());
-        pstatUser.setString(2, p.getPassword1());
+        pstatUser.setString(2, ht.getHash(p.getPassword1()));
         pstatUser.executeUpdate();
         userRs = pstatUser.getGeneratedKeys();
         if (userRs.next())

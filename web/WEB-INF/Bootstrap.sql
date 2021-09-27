@@ -12,7 +12,7 @@ DROP TABLE Users;
 --must create users first, since it is foreign key for other tables
 CREATE TABLE Users (
     username VARCHAR(15) NOT NULL UNIQUE,
-    password VARCHAR(15) NOT NULL,
+    password VARCHAR(64) NOT NULL,
     badgelevel int,
     badgehabit int,
     userid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
@@ -89,9 +89,9 @@ References GNARUS.USERS (userid);
 ----> Start here with the adds
 
 INSERT INTO Users (username, password, badgelevel, badgehabit) VALUES
-    ('johndoe', 'password',0,0),
-    ('jilljack', 'password',0,0),
-    ('monkeyman', 'banana',0,0);
+    ('johndoe', '$5$/vFJStJ5$yGZTx0JQnCIb8eVvuu.1OBUULeTpe.YzQ2dHAKEIaP1',0,0),
+    ('jilljack', '$5$/q4Gxd2l$qyLiJAPQJFLU0xwjOYstKzLA/FpTiCHUZdrChA0.0Y.',0,0),
+    ('monkeyman', '$5$5XjPpYUY$WmrJQYEHPPNYCyJpYUr.uVaXAS6hUXR4J6lJoQRrnb3',0,0);
 
 INSERT INTO Profiles (joindate, firstname, lastname, email, userid) VALUES
     (1339200000000, 'John', 'Doe', 'jd@example.com',1),
