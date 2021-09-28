@@ -18,12 +18,12 @@
     <context-param>
         <description>username to log into the database</description>
         <param-name>dbUsername</param-name>
-        <param-value>gnarus</param-value>
+        <param-value>narusadmin</param-value>
     </context-param>
     <context-param>
         <description>password for the database</description>
         <param-name>dbPassword</param-name>
-        <param-value>dilbert</param-value>
+        <param-value>C00perchabra!</param-value>
     </context-param>
     <context-param>
         <description>name of the database</description>

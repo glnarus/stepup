@@ -322,30 +322,22 @@ public class FrontController extends HttpServlet {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";
-        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");        
         if (request.getMethod().equals("GET")) {
-            Profile profile = db.getProfileFor(user);
-            if (profile == null) {
-                flashDbError (request, db,"Problem looking up profile, please retry");    
-                return "editprofile";
+            //we can pass this directly to the JSP because the only way to get
+            //the edit profile is to first load profile, which attaches the profile attribute.
+            if (request.getSession().getAttribute("profile") == null) {
+                //This is an odd case where a user bookmarks the edit profile URL without going through My Profile first in the session
+                //This is a corner case that may not be possible, but load their profile info for them here in this case to handle gracefully
+                Profile p = db.getProfileFor(user);
+                if (p == null)
+                    flashDbError (request, db,"Problem loading profile values, please try logging out and logging back in"); 
+                else
+                    request.setAttribute("profile", p);
             }
-            RegistrationBean r = new RegistrationBean ("not_editable",
-                                                   "not_editable",
-                                                   "not_editable",
-                                                   profile.getFirstName(),
-                                                   profile.getLastName(),
-                                                   profile.getEmail(),
-                                                   profile.getPhone(),
-                                                   profile.getGoal(),
-                                                   profile.getReward(),
-                                                   profile.getEmailSubscribe(),
-                                                   profile.getTextSubscribe());
-            request.setAttribute("bean", r);
-            user.setProfile(profile);
             return "editprofile";
         }
-        //Process the POST; we need to make sure everything is valid, so
-        //let's reuse the registration bean
+        //Process the POST        
         String firstName = request.getParameter("fname");
         String lastName = request.getParameter("lname");
         String email = request.getParameter("email");
@@ -354,6 +346,7 @@ public class FrontController extends HttpServlet {
         String reward = request.getParameter("reward");
         String emailSubsribe = request.getParameter("emailsubscribe");
         String textSubscribe = request.getParameter("textsubscribe");
+        //we need to make sure everything is valid, so let's reuse the registration bean        
         RegistrationBean r = new RegistrationBean ("not_editable",
                                                    "not_editable",
                                                    "not_editable",
@@ -617,6 +610,7 @@ public class FrontController extends HttpServlet {
             return "uploadPic";
         }
         user.setProfile(p);  
+        request.getSession().setAttribute("profile", p);
     } catch (IOException | ServletException e) {
         request.setAttribute("flash", e.getMessage());
         if (pic != null) pic.close();

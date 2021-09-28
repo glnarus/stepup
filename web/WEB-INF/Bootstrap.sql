@@ -1,7 +1,7 @@
 --remove foreign links so we can drop the tables 
-Alter Table GNARUS.Profiles DROP userid;
-Alter Table GNARUS.Achievements DROP userid;
-Alter Table GNARUS.Posts DROP authorid;
+Alter Table narusadmin.Profiles DROP userid;
+Alter Table narusadmin.Achievements DROP userid;
+Alter Table narusadmin.Posts DROP authorid;
 
 DROP TABLE Posts;
 DROP TABLE Profiles;
@@ -35,9 +35,9 @@ CREATE TABLE Profiles (
     profileid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
-Alter Table GNARUS.PROFILES
+Alter Table narusadmin.PROFILES
 Add FOREIGN KEY (USERID)
-References GNARUS.USERS (userid);  
+References narusadmin.USERS (userid);  
 
 
 --many followers can track many leaders, and vice versa.  This is a linking table
@@ -50,12 +50,12 @@ CREATE TABLE Followers (
 
 --setup foreign key relationship for followerid and leaderid
 --This is a linking table for a many to many relationship
-Alter Table GNARUS.Followers
+Alter Table narusadmin.Followers
 Add FOREIGN KEY (beingfollowedid)
-References GNARUS.USERS (userid); 
-Alter Table GNARUS.FOLLOWERS
+References narusadmin.USERS (userid); 
+Alter Table narusadmin.FOLLOWERS
 Add Foreign Key (followerid)
-References GNARUS.USERS (userid); 
+References narusadmin.USERS (userid); 
 
 --one user to many achievements
 CREATE TABLE Achievements (
@@ -70,9 +70,9 @@ CREATE TABLE Achievements (
     achievementid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
-Alter Table GNARUS.Achievements
+Alter Table narusadmin.Achievements
 Add FOREIGN KEY (userid)
-References GNARUS.Users(userid);
+References narusadmin.Users(userid);
 
 
 CREATE TABLE Posts (
@@ -82,9 +82,9 @@ CREATE TABLE Posts (
     postid INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 );
 
-Alter Table GNARUS.Posts
+Alter Table narusadmin.Posts
 Add FOREIGN KEY (authorid)
-References GNARUS.USERS (userid);
+References narusadmin.USERS (userid);
 
 ----> Start here with the adds
 
