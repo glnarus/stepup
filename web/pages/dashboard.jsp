@@ -36,7 +36,7 @@
         </c:forEach>   
         </div>
         <form method="POST" action="<c:url value='stepup'/>">
-            <input type="hidden" name="action" value="dashboard"/>
+            <input type="hidden" name="action" value="squaddashboard"/>
             <table>
                 <tr><td><input type="text" size="190" maxlength="280" id="postinput" 
                                placeholder="What would you like to say?" 
@@ -46,7 +46,8 @@
             </table>
         </form>        
         
-        <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
+        <p> <a href="<c:url value = 'stepup?action=mysquads' />">My Squads</a> |
+            <a href="<c:url value='stepup?action=home'/>">Home</a> |
             <a href="<c:url value='stepup?action=profile&profilefor=${user}'/>">My Profile</a> |              
             <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>       

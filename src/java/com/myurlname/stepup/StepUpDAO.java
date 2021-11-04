@@ -276,9 +276,9 @@ public class StepUpDAO {
         if (!post.isPostValid()) {
             this.lastError = "Tried to create a post with invalid post object";
             return -1;
-        }
-        String sql = "INSERT INTO Posts (content,authorid,postdate) ";
-        sql += "VALUES (?,?,?)";
+        }                
+        String sql = "INSERT INTO Posts (content,authorid,postdate,squadid) ";
+        sql += "VALUES (?,?,?,?)";
         PreparedStatement pstat = null;
         ResultSet rs = null;
         int postId = -1;
@@ -287,6 +287,7 @@ public class StepUpDAO {
             pstat.setString(1,post.getContent());
             pstat.setInt(2, post.getUserId());
             pstat.setLong(3, post.getPostDate().getTime());
+            pstat.setInt(4, post.getSquadId());
             pstat.executeUpdate();
             rs = pstat.getGeneratedKeys();
             if (rs.next()) {
@@ -462,14 +463,28 @@ public class StepUpDAO {
     }
 
     public List<Achievement> getAllAchievementsByDate() {
-        return getAchievementsByDate ("%");
+        return getAchievementsByDate ("%", -1);
     }
+    
+    public List <Achievement> getAllAchievementsByDate (int squadId) {
+        return getAchievementsByDate ("%", squadId);
+    }    
 
-    public List<Achievement> getAchievementsByDate(String username) {
+    public List<Achievement> getAchievementsByDate(String username, int squadId) {
         List<Achievement> achievements = new ArrayList<>();
-        String sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
-        sql += "Users.userid WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
-        sql = String.format(sql, username);
+        String sql = "";
+        if (squadId < 0) {
+            sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
+            sql += "Users.userid WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
+            sql = String.format(sql, username);
+        }
+        else {
+            sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
+            sql += "Users.userid JOIN Squadmembers ON Users.userid=Squadmembers.memberid ";
+            sql += "WHERE username LIKE '%s' AND Squadmembers.squadid = %d ";
+            sql += "AND NOT Squadmembers.isinvited ORDER BY dateoccurred DESC";
+            sql = String.format(sql, username, squadId);            
+        }
         Statement stat = null;
         ResultSet rs = null;
         try {
@@ -515,16 +530,82 @@ public class StepUpDAO {
         }
         return achievements;
     }
+      
+    public boolean isUserInSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        if (squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && !sm.getIsInvited()))) {
+            return true;
+        }                
+        return false;    
+    }
+    
+    public List<SquadMembership> getSquadMemberships (int userId) {
+
+        List<SquadMembership> memberships = new ArrayList<>();
+        String sql = "SELECT * FROM SQUADMEMBERS ";
+        sql += "JOIN SQUADS ON Squadmembers.squadid = Squads.squadid JOIN USERS on users.userid = squads.ownerid ";
+        sql += "WHERE squadmembers.memberid = %d ORDER BY users.username ASC";
+        sql = String.format(sql, userId);
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                String squadname = rs.getString("squadname");
+                int squadid = rs.getInt("squadid");
+                String ownerName = rs.getString("username");
+                boolean isInvited = rs.getBoolean("isinvited");
+                boolean isOwner = rs.getBoolean("isowner");
+                SquadMembership sm = new SquadMembership (squadid,squadname,isOwner, isInvited, userId, ownerName);                    
+                memberships.add(sm);
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            memberships = null;
+            lastError = sqle.getMessage();
+        }
+          catch (Exception e) {
+              //something else went wrong in trying to make the invitations
+              lastError = "Error parsing database entry";
+              memberships = null;
+          }
+            finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return memberships;        
+    }    
 
     public List<Post> getSortedPostsByDate() {
-        return getUsersPostsByDate ("%");
+        return getUsersPostsByDate ("%", -1);
+    }
+    
+    public List <Post> getSortedPostsByDate (int squadId) {
+        return getUsersPostsByDate ("%", squadId);
     }
 
-    public List<Post> getUsersPostsByDate (String username) {
+    //Get all posts by a username and optionally by squad ID as well
+    //if squadId is negative, then posts from all squad IDs will be returned
+    public List<Post> getUsersPostsByDate (String username, int squadId) {
         List<Post> posts = new ArrayList<>();
-        String sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
-        sql += "Users.userid WHERE username LIKE '%s' ORDER BY postdate DESC";
-        sql = String.format(sql, username);
+        String sql = "";
+        if (squadId < 0) {
+            sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
+            sql += "Users.userid WHERE username LIKE '%s' ORDER BY postdate DESC";
+            sql = String.format(sql, username);
+        }
+        else {
+            sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
+            sql += "Users.userid WHERE username LIKE '%s' AND Posts.squadid = %d ORDER BY postdate DESC";
+            sql = String.format(sql, username, squadId);
+        }
         Statement stat = null;
         ResultSet rs = null;
         try {

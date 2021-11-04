@@ -95,7 +95,7 @@
             </table>
             </fieldset>
         </form>       
-        <p> <a href="<c:url value = 'stepup?action=dashboard' />">Group Dashboard</a> |                                  
+        <p> <a href="<c:url value = 'stepup?action=mysquads' />">My Squads</a> |                                  
             <a href="<c:url value ='stepup?action=profile&profilefor=${user}'/>">My Profile</a> |            
             <a href="<c:url value = 'stepup?action=logout'/>">Logout</a>
         </p>

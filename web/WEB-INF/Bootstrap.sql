@@ -148,13 +148,17 @@ INSERT INTO Achievements (exercise, duration, intensity, score, notes, userid, d
     
 INSERT INTO Squads (squadname,ownerid) VALUES
     ('The Cool Kids', 2),
-    ('Can We Borrow Your Weights?', 1);
+    ('Can We Borrow Your Weights?', 1),
+    ('Fans of JillJack', 1);
 
 INSERT INTO Squadmembers (memberid, isowner, isinvited, squadid) VALUES
     (2, TRUE, FALSE, 1),
     (3, FALSE, FALSE, 1),
     (1, TRUE, FALSE, 2),
-    (2, FALSE, TRUE, 2);
+    (2, FALSE, TRUE, 2),
+    (3, FALSE, TRUE, 2),
+    (2, FALSE, TRUE, 3),
+    (1, TRUE, FALSE, 3);
 
 INSERT INTO Posts (content, authorid, postdate, squadid) VALUES
     ('I''m super tired of exercising! Does anyone want to join my squad?', 1, 1339200000000,2),
