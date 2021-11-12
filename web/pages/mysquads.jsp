@@ -39,7 +39,8 @@
                         owned by: <a href="<c:url value='stepup?action=profile&profilefor=${squad.ownerName}'/>">${squad.ownerName}</a> <br>
                     </c:when>                                        
                     <c:otherwise>
-                        Owner of <a href="<c:url value='stepup?action=squaddashboard&squadid=${squad.squadId}'/>">${squad.squadName}</a><br>
+                        Owner of <a href="<c:url value='stepup?action=squaddashboard&squadid=${squad.squadId}'/>">${squad.squadName}</a> | 
+                                 <a href="<c:url value ='stepup?action=invitemembers&squadid=${squad.squadId}&squadname=${squad.squadName}'/>">Invite Others</a><br>
                     </c:otherwise>
                 </c:choose>
             </c:forEach>

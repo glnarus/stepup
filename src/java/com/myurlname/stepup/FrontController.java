@@ -85,6 +85,10 @@ public class FrontController extends HttpServlet {
             case "mysquads":
                 nextPage = mysquads(request);
                 break;
+                
+            case "invitemembers" :
+                nextPage = inviteMember(request);
+                break;
             
             case "logout" :
                 nextPage = logout(request);
@@ -683,7 +687,69 @@ public class FrontController extends HttpServlet {
         request.getSession().setAttribute("ownedSquads", ownedSquads);        
         return "mysquads";
     }    
+    
+    private String inviteMember (HttpServletRequest request) {
+       /* TODO: handle posts */
+        
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";      
+        if (request.getMethod().equals("GET")) {            
+            int squadId;            
+            try {squadId = Integer.parseInt(request.getParameter("squadid"));}
+            catch (NumberFormatException nfe) {return "mysquads";}
+            request.getSession().setAttribute("squadname", request.getParameter("squadname"));
+            request.getSession().setAttribute("squadid", squadId);
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            updateInvitedMemberList (db, request, squadId);
+        }
+        else if (request.getMethod().equals("POST")) {
+            //this is a POST, check if the username requesting an invite exists, if so,
+            //invite the user to the squad (DAO), update the 'invitationsSent' list
+            int squadId = 0;
+            String squadName = "";
+            if (request.getSession().getAttribute("squadid") == null ||
+                request.getSession().getAttribute("squadname")== null) //unexpected condition, go back to home
+                return "home";
+            else {
+                squadId = (int)request.getSession().getAttribute("squadid");
+                squadName = (String)request.getSession().getAttribute("squadname");
+            }    
+            String invitedUsername = request.getParameter("invitedusername");
+            InvitedUser iu = new InvitedUser(invitedUsername, squadId);
+            if (!iu.isInvitedUsernameValid()) {
+                request.setAttribute("flash", "Improperly formatting username, please try again");
+                return "invitemember";
+            }
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            if (db.inviteUser(iu) == -1) {
+                request.setAttribute("flash","Unrecognized user to invite");
+                flashDbError (request, db,"Problem inviting user, please check username and retry");  
+                return "invitemember";
+            }
+            //Now update the list of invited members for the JSP to load
+            updateInvitedMemberList (db, request, squadId);    
+        }
+        
+        return "invitemember";
+    }     
    
+    private boolean updateInvitedMemberList (StepUpDAO db, HttpServletRequest request, int squadId) {
+        List<SquadMembership> squadMemberships = db.getAllSquadMembers(squadId);
+        if (squadMemberships == null) {
+            flashDbError (request, db,"Problem looking up username for list of squad members, please retry");    
+            return false;
+        }
+        //create a list of invitations sent out for this squad (memberships where isInvited is true for this squad)        
+        List <SquadMembership> invitationsSent = new ArrayList<>();
+        for (SquadMembership m : squadMemberships) {
+            if (m.getIsInvited())
+                invitationsSent.add(m);
+        }            
+        request.getSession().setAttribute("invitationsSent", invitationsSent);  
+        return true;
+    }
+    
     private String follow (HttpServletRequest request) {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)

@@ -153,7 +153,8 @@ INSERT INTO Squads (squadname,ownerid) VALUES
 
 INSERT INTO Squadmembers (memberid, isowner, isinvited, squadid) VALUES
     (2, TRUE, FALSE, 1),
-    (3, FALSE, FALSE, 1),
+    (3, FALSE, TRUE, 1),
+    (1, FALSE, TRUE, 1),
     (1, TRUE, FALSE, 2),
     (2, FALSE, TRUE, 2),
     (3, FALSE, TRUE, 2),

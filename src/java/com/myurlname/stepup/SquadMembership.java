@@ -18,13 +18,15 @@ public class SquadMembership {
     private boolean isOwner;
     private boolean isInvited;
     private int userId;
+    private String userName;
     
-    public SquadMembership (int squadId, String squadName, boolean isOwner, boolean isInvited, int userId, String ownerName) {
+    public SquadMembership (int squadId, String squadName, boolean isOwner, boolean isInvited, int userId, String userName, String ownerName) {
         this.squadId = squadId;
         this.isInvited = isInvited;
         this.isOwner = isOwner;
         this.squadName = squadName;
         this.userId = userId;
+        this.userName = userName;
         this.ownerName = ownerName;
     }
 
@@ -110,6 +112,20 @@ public class SquadMembership {
      */
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
+    }
+
+    /**
+     * @return the userName
+     */
+    public String getUserName() {
+        return userName;
+    }
+
+    /**
+     * @param userName the userName to set
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
     
 }
