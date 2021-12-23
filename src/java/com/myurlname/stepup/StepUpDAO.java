@@ -533,11 +533,13 @@ public class StepUpDAO {
       
     public boolean isUserInSquad ( int userId, int squadId) {
         List <SquadMembership> squads = getSquadMemberships (userId);
-        if (squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && !sm.getIsInvited()))) {
-            return true;
-        }                
-        return false;    
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && !sm.getIsInvited()));            
     }
+    
+    public boolean isUserInvitedToSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && sm.getIsInvited()));            
+    }    
     
     public List<SquadMembership> getAllSquadMembers (int squadId) {
         //Could probably combine this with the getSquadMembership method
@@ -632,6 +634,31 @@ public class StepUpDAO {
         return memberships;        
     }    
 
+    //returns true if operation successful, false if not.
+    public boolean joinSquad (int userId, int squadId) {
+        //first verify user is invited to the squad
+        if (!isUserInvitedToSquad (userId, squadId)) {
+            lastError = "user cannot join a squad they are not invited to!";
+            return false;
+        }
+        //now "join" the squad by setting isInvited to false, thereby 'accepting' in the invitation           
+        String sql = "UPDATE squadmembers SET isinvited = ? WHERE memberid = ? AND squadid = ?";        
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setBoolean(1, false);            
+            pstat.setInt(2, userId);
+            pstat.setInt(3, squadId);
+            pstat.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        } finally {
+            if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
+            return (lastError == null);
+        }
+    }
+    
     public List<Post> getSortedPostsByDate() {
         return getUsersPostsByDate ("%", -1);
     }
