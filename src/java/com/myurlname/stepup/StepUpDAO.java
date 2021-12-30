@@ -541,6 +541,11 @@ public class StepUpDAO {
         return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && sm.getIsInvited()));            
     }    
     
+    public boolean isUserInvitedToOrMemberOfSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId));            
+    }       
+    
     public List<SquadMembership> getAllSquadMembers (int squadId) {
         //Could probably combine this with the getSquadMembership method
         List<SquadMembership> memberships = new ArrayList<>();
@@ -658,6 +663,33 @@ public class StepUpDAO {
             return (lastError == null);
         }
     }
+    
+    
+        
+    //returns true if operation successful, false if not.
+    public boolean removeUserFromSquad (int userId, int squadId) {
+        //first verify user is invited to the squad
+        if (!isUserInvitedToOrMemberOfSquad (userId, squadId)) {
+            lastError = "user already not member of nor invited to that squad";
+            return false;
+        }
+        //now remove user from the squad by deleting all records in the squad membership table
+        //belonging to this user and the squadId
+        String sql = "DELETE FROM squadmembers WHERE memberid = ? AND squadid = ?";        
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);           
+            pstat.setInt(1, userId);
+            pstat.setInt(2, squadId);
+            pstat.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        } finally {
+            if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
+            return (lastError == null);
+        }
+    }        
     
     public List<Post> getSortedPostsByDate() {
         return getUsersPostsByDate ("%", -1);

@@ -87,7 +87,11 @@ public class FrontController extends HttpServlet {
                 break;
 
             case "joinsquad":
-                nextPage = joinSquad(request);
+                nextPage = removeOrJoinSquad(request, true);
+                break;
+
+            case "removeinvite":
+                nextPage = removeOrJoinSquad(request, false);
                 break;
                 
             case "invitemembers" :
@@ -692,10 +696,15 @@ public class FrontController extends HttpServlet {
         return "mysquads";
     }    
     
-    private String joinSquad (HttpServletRequest request) {
+    private String removeOrJoinSquad (HttpServletRequest request, boolean isJoin) {
+        //Method will verify user is in session and is invited to squad
+        //After join/remove complete, method will call mysquad method to display the mysquads page with updated results
+
+        //isJoin = false:
+        //Method will remove the session's user's invitation to the squad from the id parameter attached to the http request
+
+        //isJoin = true: 
         //Method will add the session's user to the squad from the id parameter attached to the http request
-        //Method will verify user is in session and is invited to squad before doing so
-        //After adding, method will call mysquad method to display the mysquads page with updated results
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";        
@@ -704,16 +713,23 @@ public class FrontController extends HttpServlet {
         try {squadId = Integer.parseInt(request.getParameter("id"));}
         catch (NumberFormatException nfe) {return "home";}
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
-        if (!db.joinSquad(user.getUserId(), squadId)) {
-            flashDbError (request, db,"Problem adding user to squad, please retry");    
-            return "mysquads";
+        if (isJoin) {
+            if (!db.joinSquad(user.getUserId(), squadId)) {
+                flashDbError (request, db,"Problem adding user to squad, please retry");    
+                return "mysquads";
+            }
+        }
+        else {
+            if (!db.removeUserFromSquad(user.getUserId(), squadId)) {
+                flashDbError (request, db,"Problem removing user from squad, please retry");    
+                return "mysquads";
+            }                        
         }
         return mysquads (request);
     }        
-    
+         
     private String inviteMember (HttpServletRequest request) {
-       /* TODO: handle posts */
-        
+       
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";      
