@@ -46,9 +46,9 @@
             </c:forEach>
         </div>
         
-        <h2>Create new squad</h2>
+        <h2><a href="<c:url value = 'stepup?action=createsquad' />">Create New Squad</a></h2>
         
-        
+  
         <p> <a href="<c:url value = 'stepup?action=home' />">Home</a> |                                  
             <a href="<c:url value ='stepup?action=profile&profilefor=${user}'/>">My Profile</a> |            
             <a href="<c:url value = 'stepup?action=logout'/>">Logout</a>

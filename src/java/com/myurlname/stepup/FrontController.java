@@ -90,6 +90,10 @@ public class FrontController extends HttpServlet {
                 nextPage = removeOrJoinSquad(request, true);
                 break;
 
+            case "createsquad":
+                nextPage = createSquad (request);
+                break;
+                
             case "removeinvite":
                 nextPage = removeOrJoinSquad(request, false);
                 break;
@@ -773,6 +777,41 @@ public class FrontController extends HttpServlet {
         return "invitemember";
     }     
    
+    private String createSquad (HttpServletRequest request) {
+//       Just have a short JSP that users can either POST in their new squad name, 
+//       and once created will automatically go to the invite others page
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";    
+        if (request.getMethod().equals("GET")) return "createsquad";
+        if (request.getMethod().equals("POST")) {
+            //this is a POST, so the user wants to create a new squad.  Let's check if the 
+            //proposed squad name is valid and unique, and if so, create it!          
+            String newSquadName = (String)request.getParameter("newsquadname");
+               
+            NewSquadName nsn = new NewSquadName (newSquadName);
+            if (!nsn.validate()) {
+                request.setAttribute("flash", "Squad names must be: 5-50 characters composed of letters, numbers, and single spaces only");
+                return "createsquad";
+            }
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            if (!db.createSquad(user.getUserId(), nsn.getNewSquadName())) {
+                request.setAttribute("flash","Could not create new squad");
+                flashDbError (request, db,"Problem creating new squad");  
+                return "createsquad";                
+            }                
+            //attach squad ID to session scope
+            int newSquadId = db.getSquadIdBySquadName(newSquadName);
+                
+            //Now update the session attributes to prepare for the inviteMember page
+            request.getSession().setAttribute("squadname", newSquadName);
+            request.getSession().setAttribute("squadid", newSquadId);
+            updateInvitedMemberList (db, request, newSquadId);
+        }
+        
+        return "invitemember";
+    }     
+    
     private boolean updateInvitedMemberList (StepUpDAO db, HttpServletRequest request, int squadId) {
         List<SquadMembership> squadMemberships = db.getAllSquadMembers(squadId);
         if (squadMemberships == null) {

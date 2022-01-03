@@ -691,6 +691,91 @@ public class StepUpDAO {
         }
     }        
     
+    //Returns true if successful, false if unsucessful.  See lastError for details if unsuccessful.
+    //Assumes squadName has already been validated.  This method creates records in two tables -
+    //SQUADS (create the squad) and SQUADMEMBERS (assign an owner)
+    public boolean createSquad (int ownerId, String squadName) {
+        //Verify ownerId is a valid user
+        if (getUserById (ownerId) == null) {
+            lastError = "user does not exist, cannot create squad";
+            return false;
+        }
+        
+        //Verify squadName does not already exist
+        if (getSquadIdBySquadName (squadName) == -1) {
+            if (lastError != null) return false;
+        }
+                
+        //Create squad by first inserting a new record in the SQUAD table and then adding the owner
+        //of the new squad in the SQUADMEMBERS table
+        PreparedStatement pstatSquads = null, pstatSquadMembers = null;                           
+        ResultSet squadRs = null;
+        String sqlSquad = "INSERT INTO squads (squadname, ownerid) VALUES (?, ?)";  
+        String sqlSquadMembers = "INSERT INTO squadmembers (memberid, isowner, isinvited, squadid)";
+        sqlSquadMembers += " VALUES (?,?,?,?)";
+        int squadId = -1;
+        try {
+            pstatSquads = CONN.prepareStatement(sqlSquad, Statement.RETURN_GENERATED_KEYS);
+            pstatSquads.setString(1, squadName);
+            pstatSquads.setInt(2, ownerId);
+            pstatSquads.executeUpdate();
+            //fetch the auto-generated key (aka SquadId) because we need it for the SquadMembers table
+            squadRs = pstatSquads.getGeneratedKeys();
+            if (squadRs.next())
+                squadId = squadRs.getInt(1);
+            
+            pstatSquadMembers = CONN.prepareStatement(sqlSquadMembers);
+            pstatSquadMembers.setInt(1, ownerId);
+            pstatSquadMembers.setBoolean(2, true);
+            pstatSquadMembers.setBoolean(3, false);
+            pstatSquadMembers.setInt(4, squadId);
+            pstatSquadMembers.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        }                
+        finally {
+            if (squadRs != null)
+                try {squadRs.close(); } catch (SQLException sqle) {}
+            if (pstatSquads != null) 
+                try {pstatSquads.close();} catch (SQLException sqle) {}
+            if (pstatSquadMembers != null) 
+                try {pstatSquadMembers.close();} catch (SQLException sqle) {}                        
+            return (lastError == null);
+        }                
+    }       
+    
+    //Returns squad ID if successful lookup, -1 if no squad exists or error occurs.
+    //See lastError to determine if error occurred.
+    public int getSquadIdBySquadName (String squadName) {
+        if (squadName == null) return -1;
+        String sql = "SELECT SQUADID FROM SQUADS WHERE SQUADNAME = " +
+                                                    "'" + squadName + "'";
+        Statement stat = null;
+        ResultSet rs = null;
+        int squadId = -1;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            if (rs.next()) {
+                squadId = rs.getInt("SQUADID");
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return squadId;
+    }
+    
     public List<Post> getSortedPostsByDate() {
         return getUsersPostsByDate ("%", -1);
     }
