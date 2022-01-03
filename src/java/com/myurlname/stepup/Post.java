@@ -16,6 +16,7 @@ public class Post implements java.io.Serializable {
     private String username;
     private int userId;
     private int id;
+    private int squadId;
     public static final int POST_MAX_LENGTH = 280;
 
     public Post(String content, Date postDate) {
@@ -23,17 +24,19 @@ public class Post implements java.io.Serializable {
         this.postDate = postDate;
     }
 
-    public Post(String content, String username, int userId) {
+    public Post(String content, String username, int userId, int squadId) {
         setContentSafe (content);
         this.postDate = new Date();
         this.username = username;
         this.userId = userId;
+        this.squadId = squadId;
     }
 
-    public Post(String content, Date postDate, String username, int id) {
+    public Post(String content, Date postDate, String username, int id, int squadId) {
         this(content, postDate);
         this.username = username;
         this.id = id;
+        this.squadId = squadId;
     }
 
     /* CAUTION: This constructor is used only by the database and, as such,
@@ -41,12 +44,13 @@ public class Post implements java.io.Serializable {
     the database where you are sure the data is good (since data going into
     the database has been through the setContentSafe method here).
     */
-    public Post(String content, Date postDate, String username, int userId, int id) {
+    public Post(String content, Date postDate, String username, int userId, int id, int squadId) {
         this.content = content;
         this.postDate = postDate;
         this.username = username;
         this.userId = userId;
         this.id = id;
+        this.squadId = squadId;
     }
 
     public Post() {}
@@ -57,6 +61,7 @@ public class Post implements java.io.Serializable {
 
     public boolean isPostValid () {
         if (content == null) return false;
+        if (squadId < 0 || userId < 0) return false;
         if ((content.length() > 0) && (content.length() <= POST_MAX_LENGTH))
             return true;
         return false;
@@ -113,6 +118,20 @@ public class Post implements java.io.Serializable {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    /**
+     * @return the squadId
+     */
+    public int getSquadId() {
+        return squadId;
+    }
+
+    /**
+     * @param squadId the squadId to set
+     */
+    public void setSquadId(int squadId) {
+        this.squadId = squadId;
     }
 }
 

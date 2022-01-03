@@ -7,6 +7,7 @@ package com.myurlname.stepup;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -61,7 +62,7 @@ public class FrontController extends HttpServlet {
                 nextPage = editProfile (request);
                 break;
 
-            case "dashboard":
+            case "squaddashboard":
                 nextPage = dashboard(request);
                 break;
 
@@ -81,6 +82,26 @@ public class FrontController extends HttpServlet {
                 sendImage(request, response);
                 break;
 
+            case "mysquads":
+                nextPage = mysquads(request);
+                break;
+
+            case "joinsquad":
+                nextPage = removeOrJoinSquad(request, true);
+                break;
+
+            case "createsquad":
+                nextPage = createSquad (request);
+                break;
+                
+            case "removeinvite":
+                nextPage = removeOrJoinSquad(request, false);
+                break;
+                
+            case "invitemembers" :
+                nextPage = inviteMember(request);
+                break;
+            
             case "logout" :
                 nextPage = logout(request);
                 break;
@@ -120,7 +141,7 @@ public class FrontController extends HttpServlet {
                 //add the achievement log for this user to the session as well
                 //since we are loading the home page next
                 List<Achievement> achievements =
-                                            db.getAchievementsByDate(username);
+                                            db.getAchievementsByDate(username,-1);
                 request.getSession().setAttribute("achievements", achievements);
                 List <Integer> SixWeeksScores = BadgeCalculator.getSixWeeksHistory(
                                                                 achievements, null);
@@ -202,39 +223,57 @@ public class FrontController extends HttpServlet {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)
             return "login";
-
+        int squadId = -1;
+        try {squadId = Integer.parseInt(request.getParameter("squadid"));
+        } catch (Exception e) {}
+        if (user == null)
+            return "login";
+        if (squadId == -1)
+            return "home";
+        
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
-        //get all the achievements for the activity board...
-        List <Achievement> achievements = db.getAllAchievementsByDate();
+        
+        
+        //get all the achievements for the activity board for everyone in the squad...
+        List <Achievement> achievements = db.getAllAchievementsByDate(squadId);
         if (achievements == null) {
             flashDbError (request, db,"Unable to read all dashboard achievments, please retry");       
             return "dashboard";
         }
         request.getSession().setAttribute("achievementsAll", achievements);
-        //get all the posts for the bulletin board...
-        List <Post> posts = db.getSortedPostsByDate();
+        
+        //now, get all the posts for the bulletin board made by the squad members...
+        List <Post> posts = db.getSortedPostsByDate(squadId);
         if (posts == null) {
             flashDbError (request, db,"Unable to read all dashboard posts, please retry");    
             return "dashboard";
         }
         request.getSession().setAttribute("posts", posts);
+        request.getSession().setAttribute("currentSquadId", new Integer(squadId)); //need to save
+        //the squad ID this dashboard is showing at session level for future dashboard requests
         //everything went ok ready for JSP to display
         return "dashboard";
-    }
+    }        
 
     private String submitPost (HttpServletRequest request) {
         //Currently, only GETs supported.
         User user = (User)request.getSession().getAttribute("user");
+        int squadId = -1;
+        try {squadId = (Integer) request.getSession().getAttribute("currentSquadId");
+        } catch (Exception e) {}        
         if (user == null)
             return "login";
-        if (request.getSession().getAttribute("achievementsAll") == null) {
-            //a POST without previously viewing the dashboard is weird, if a user
-            //does this weird thing somehow, send them home
-            return "home";
-        }
+        if (squadId == -1) //this is an unexpected condition, so send them back to the dashboard
+            return "dashboard";
+
+        
+        //NEED function here to ensure user is member of squad before posting
+                
+        
+        
         //build the Post object
         Post post = new Post (request.getParameter("content"),
-                              user.getUsername(), user.getUserId());
+                              user.getUsername(), user.getUserId(), squadId);
 
         if (!post.isPostValid()) {
             request.setAttribute("flash", "Posts must be between 0 and " +
@@ -244,6 +283,15 @@ public class FrontController extends HttpServlet {
         //Post checks out ok and Post object translated all HTML/SQL control
         //characters, so let's update the db
         StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        
+        //one final check here is to make sure the user belongs to the squad.  This should be
+        //enforced through proper web app navigation, but we want to be robust here from a security
+        //standpoint.
+        if (!db.isUserInSquad(user.getUserId(), squadId)) {
+                request.getSession().invalidate();
+                return "login";
+        }
+        
         int postId = db.createPost(post);
         if (postId < 0) {
             flashDbError (request, db,"Unable to confirm post is saved, please retry");    
@@ -253,7 +301,7 @@ public class FrontController extends HttpServlet {
         sendOutUpdatesToFollowers(db, post);
         //pull all posts again (there may have been more posts added since we
         //have been working on this one)
-        List <Post> posts = db.getSortedPostsByDate();
+        List <Post> posts = db.getSortedPostsByDate(squadId);
 
         request.getSession().setAttribute("posts", posts);
         //everything went ok ready for JSP to display
@@ -285,7 +333,7 @@ public class FrontController extends HttpServlet {
             return "profile";
         }
 
-        List achievements = db.getAchievementsByDate(subject.getUsername());
+        List achievements = db.getAchievementsByDate(subject.getUsername(), -1);
         if (achievements == null)  {
             flashDbError (request, db,"Problem looking up profile, please retry");    
             return "profile";
@@ -418,7 +466,7 @@ public class FrontController extends HttpServlet {
                 //re-populate achievement list
                 //Can be more efficient about the above by adding Achievement, in order
                 //here instead of calling the dbase again.
-                List achievements = db.getAchievementsByDate(user.getUsername());
+                List achievements = db.getAchievementsByDate(user.getUsername(),-1);
                 if (achievements == null)  {
                     flashDbError (request, db,"Problem looking up achievements, please retry");    
                     return "home";
@@ -477,7 +525,7 @@ public class FrontController extends HttpServlet {
             }
             //Can be more efficient about the above by adding Achievement, in order
             //here instead of calling the dbase again.
-            List achievements = db.getAchievementsByDate(user.getUsername());
+            List achievements = db.getAchievementsByDate(user.getUsername(),-1);
             if (achievements == null)  {
                 flashDbError (request, db,"Problem looking up achievements, please retry");    
                 request.getSession().removeAttribute("achievements");
@@ -522,7 +570,7 @@ public class FrontController extends HttpServlet {
         int achievementId = db.addAchievement (achievement);
         if (achievementId > -1) {
             achievement.setAchievementId(achievementId);
-            List achievements = db.getAchievementsByDate(user.getUsername());
+            List achievements = db.getAchievementsByDate(user.getUsername(),-1);
             if ((achievements != null) && (!achievements.isEmpty())) {
                 Badge badge = BadgeCalculator.calculateBadge(achievements, new Date());
                 int upRet = db.updateBadge(user.getUserId(), badge);
@@ -620,7 +668,166 @@ public class FrontController extends HttpServlet {
     try {filePart.delete();} catch (Exception e) {}
     return "profile";
     }
+    
+    private String mysquads (HttpServletRequest request) {
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";        
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        List<SquadMembership> squadMemberships = db.getSquadMemberships(user.getUserId());
+        if (squadMemberships == null) {
+            flashDbError (request, db,"Problem looking up username for list of squad invitations, please retry");    
+            return "mysquads";
+        }
+        //create a list of invitations (memberships where isInvited is true for this user),
+        //a list of squads that the user owns, and a list of all squads the user is a member or owner
+        //of
+        List <SquadMembership> invites = new ArrayList<>();        
+        List <SquadMembership> ownedSquads = new ArrayList<>();     
+        List <SquadMembership> joinedOrOwnedSquads = new ArrayList<>();             
+        for (SquadMembership m : squadMemberships) {
+            if (m.getIsInvited())
+                invites.add(m);
+            else {
+                joinedOrOwnedSquads.add(m);
+                if (m.getIsOwner())
+                    ownedSquads.add(m);
+            }            
+        }            
+        request.getSession().setAttribute("myInvitations", invites);        
+        request.getSession().setAttribute("joinedOrOwnedSquads", joinedOrOwnedSquads);        
+        request.getSession().setAttribute("ownedSquads", ownedSquads);        
+        return "mysquads";
+    }    
+    
+    private String removeOrJoinSquad (HttpServletRequest request, boolean isJoin) {
+        //Method will verify user is in session and is invited to squad
+        //After join/remove complete, method will call mysquad method to display the mysquads page with updated results
+
+        //isJoin = false:
+        //Method will remove the session's user's invitation to the squad from the id parameter attached to the http request
+
+        //isJoin = true: 
+        //Method will add the session's user to the squad from the id parameter attached to the http request
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";        
+        //get and verify the squad ID paramter that this user wants to join
+        int squadId;
+        try {squadId = Integer.parseInt(request.getParameter("id"));}
+        catch (NumberFormatException nfe) {return "home";}
+        StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+        if (isJoin) {
+            if (!db.joinSquad(user.getUserId(), squadId)) {
+                flashDbError (request, db,"Problem adding user to squad, please retry");    
+                return "mysquads";
+            }
+        }
+        else {
+            if (!db.removeUserFromSquad(user.getUserId(), squadId)) {
+                flashDbError (request, db,"Problem removing user from squad, please retry");    
+                return "mysquads";
+            }                        
+        }
+        return mysquads (request);
+    }        
+         
+    private String inviteMember (HttpServletRequest request) {
+       
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";      
+        if (request.getMethod().equals("GET")) {            
+            int squadId;            
+            try {squadId = Integer.parseInt(request.getParameter("squadid"));}
+            catch (NumberFormatException nfe) {return "mysquads";}
+            request.getSession().setAttribute("squadname", request.getParameter("squadname"));
+            request.getSession().setAttribute("squadid", squadId);
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            updateInvitedMemberList (db, request, squadId);
+        }
+        else if (request.getMethod().equals("POST")) {
+            //this is a POST, check if the username requesting an invite exists, if so,
+            //invite the user to the squad (DAO), update the 'invitationsSent' list
+            int squadId = 0;
+            String squadName = "";
+            if (request.getSession().getAttribute("squadid") == null ||
+                request.getSession().getAttribute("squadname")== null) //unexpected condition, go back to home
+                return "home";
+            else {
+                squadId = (int)request.getSession().getAttribute("squadid");
+                squadName = (String)request.getSession().getAttribute("squadname");
+            }    
+            String invitedUsername = request.getParameter("invitedusername");
+            InvitedUser iu = new InvitedUser(invitedUsername, squadId);
+            if (!iu.isInvitedUsernameValid()) {
+                request.setAttribute("flash", "Improperly formatting username, please try again");
+                return "invitemember";
+            }
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            if (db.inviteUser(iu) == -1) {
+                request.setAttribute("flash","Unrecognized user to invite");
+                flashDbError (request, db,"Problem inviting user, please check username and retry");  
+                return "invitemember";
+            }
+            //Now update the list of invited members for the JSP to load
+            updateInvitedMemberList (db, request, squadId);    
+        }
+        
+        return "invitemember";
+    }     
    
+    private String createSquad (HttpServletRequest request) {
+//       Just have a short JSP that users can either POST in their new squad name, 
+//       and once created will automatically go to the invite others page
+        User user = (User)request.getSession().getAttribute("user");
+        if (user == null)
+            return "login";    
+        if (request.getMethod().equals("GET")) return "createsquad";
+        if (request.getMethod().equals("POST")) {
+            //this is a POST, so the user wants to create a new squad.  Let's check if the 
+            //proposed squad name is valid and unique, and if so, create it!          
+            String newSquadName = (String)request.getParameter("newsquadname");
+               
+            NewSquadName nsn = new NewSquadName (newSquadName);
+            if (!nsn.validate()) {
+                request.setAttribute("flash", "Squad names must be: 5-50 characters composed of letters, numbers, and single spaces only");
+                return "createsquad";
+            }
+            StepUpDAO db = (StepUpDAO) getServletContext().getAttribute("db");
+            if (!db.createSquad(user.getUserId(), nsn.getNewSquadName())) {
+                request.setAttribute("flash","Could not create new squad");
+                flashDbError (request, db,"Problem creating new squad");  
+                return "createsquad";                
+            }                
+            //attach squad ID to session scope
+            int newSquadId = db.getSquadIdBySquadName(newSquadName);
+                
+            //Now update the session attributes to prepare for the inviteMember page
+            request.getSession().setAttribute("squadname", newSquadName);
+            request.getSession().setAttribute("squadid", newSquadId);
+            updateInvitedMemberList (db, request, newSquadId);
+        }
+        
+        return "invitemember";
+    }     
+    
+    private boolean updateInvitedMemberList (StepUpDAO db, HttpServletRequest request, int squadId) {
+        List<SquadMembership> squadMemberships = db.getAllSquadMembers(squadId);
+        if (squadMemberships == null) {
+            flashDbError (request, db,"Problem looking up username for list of squad members, please retry");    
+            return false;
+        }
+        //create a list of invitations sent out for this squad (memberships where isInvited is true for this squad)        
+        List <SquadMembership> invitationsSent = new ArrayList<>();
+        for (SquadMembership m : squadMemberships) {
+            if (m.getIsInvited())
+                invitationsSent.add(m);
+        }            
+        request.getSession().setAttribute("invitationsSent", invitationsSent);  
+        return true;
+    }
+    
     private String follow (HttpServletRequest request) {
         User user = (User)request.getSession().getAttribute("user");
         if (user == null)

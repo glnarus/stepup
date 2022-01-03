@@ -80,7 +80,7 @@
 
         
         <p> <a href="<c:url value='stepup?action=home'/>">Home</a>
-            <a href="<c:url value='stepup?action=dashboard'/>">Group Dashboard</a> |
+            <a href="<c:url value='stepup?action=mysquads'/>">My Squads</a> |
             <a href="<c:url value='stepup?action=editprofile'/>">Edit My Profile</a> |            
             <a href="<c:url value='stepup?action=logout'/>">Logout</a>
         </p>

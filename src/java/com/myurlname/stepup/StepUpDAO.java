@@ -276,9 +276,9 @@ public class StepUpDAO {
         if (!post.isPostValid()) {
             this.lastError = "Tried to create a post with invalid post object";
             return -1;
-        }
-        String sql = "INSERT INTO Posts (content,authorid,postdate) ";
-        sql += "VALUES (?,?,?)";
+        }                
+        String sql = "INSERT INTO Posts (content,authorid,postdate,squadid) ";
+        sql += "VALUES (?,?,?,?)";
         PreparedStatement pstat = null;
         ResultSet rs = null;
         int postId = -1;
@@ -287,6 +287,7 @@ public class StepUpDAO {
             pstat.setString(1,post.getContent());
             pstat.setInt(2, post.getUserId());
             pstat.setLong(3, post.getPostDate().getTime());
+            pstat.setInt(4, post.getSquadId());
             pstat.executeUpdate();
             rs = pstat.getGeneratedKeys();
             if (rs.next()) {
@@ -462,14 +463,28 @@ public class StepUpDAO {
     }
 
     public List<Achievement> getAllAchievementsByDate() {
-        return getAchievementsByDate ("%");
+        return getAchievementsByDate ("%", -1);
     }
+    
+    public List <Achievement> getAllAchievementsByDate (int squadId) {
+        return getAchievementsByDate ("%", squadId);
+    }    
 
-    public List<Achievement> getAchievementsByDate(String username) {
+    public List<Achievement> getAchievementsByDate(String username, int squadId) {
         List<Achievement> achievements = new ArrayList<>();
-        String sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
-        sql += "Users.userid WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
-        sql = String.format(sql, username);
+        String sql = "";
+        if (squadId < 0) {
+            sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
+            sql += "Users.userid WHERE username LIKE '%s' ORDER BY dateoccurred DESC";
+            sql = String.format(sql, username);
+        }
+        else {
+            sql = "SELECT * FROM Achievements JOIN Users ON Achievements.userid = ";
+            sql += "Users.userid JOIN Squadmembers ON Users.userid=Squadmembers.memberid ";
+            sql += "WHERE username LIKE '%s' AND Squadmembers.squadid = %d ";
+            sql += "AND NOT Squadmembers.isinvited ORDER BY dateoccurred DESC";
+            sql = String.format(sql, username, squadId);            
+        }
         Statement stat = null;
         ResultSet rs = null;
         try {
@@ -515,16 +530,275 @@ public class StepUpDAO {
         }
         return achievements;
     }
+      
+    public boolean isUserInSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && !sm.getIsInvited()));            
+    }
+    
+    public boolean isUserInvitedToSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId && sm.getIsInvited()));            
+    }    
+    
+    public boolean isUserInvitedToOrMemberOfSquad ( int userId, int squadId) {
+        List <SquadMembership> squads = getSquadMemberships (userId);
+        return squads.stream().anyMatch(sm -> (sm.getSquadId() == squadId));            
+    }       
+    
+    public List<SquadMembership> getAllSquadMembers (int squadId) {
+        //Could probably combine this with the getSquadMembership method
+        List<SquadMembership> memberships = new ArrayList<>();
+        String sql = "SELECT sm.SQUADID, SQUADS.squadname, SQUADS.SQUADID, owners.USERNAME ownername, sm.ISINVITED, sm.ISOWNER, mynames.USERNAME membername, mynames.USERID memberid ";
+        sql += "FROM SQUADMEMBERS sm JOIN SQUADS ON sm.squadid = Squads.squadid JOIN USERS owners ON owners.userid = squads.ownerid ";
+        sql += "JOIN USERS mynames ON mynames.userid =  sm.memberid ";
+        sql += "WHERE sm.SQUADID = %d ORDER BY membername ASC";
+        sql = String.format(sql, squadId);
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                String squadname = rs.getString("squadname");
+                int squadid = rs.getInt("squadid");
+                String ownerName = rs.getString("ownername");
+                boolean isInvited = rs.getBoolean("isinvited");
+                boolean isOwner = rs.getBoolean("isowner");
+                String memberName = rs.getString("membername");
+                int memberId = rs.getInt("memberid");
+                SquadMembership sm = new SquadMembership (squadid,squadname,isOwner, isInvited, memberId,memberName,ownerName);                    
+                memberships.add(sm);
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            memberships = null;
+            lastError = sqle.getMessage();
+        }
+          catch (Exception e) {
+              //something else went wrong in trying to make the invitations
+              lastError = "Error parsing database entry";
+              memberships = null;
+          }
+            finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return memberships;        
+    }    
 
+    public List<SquadMembership> getSquadMemberships (int userId) {
+
+        List<SquadMembership> memberships = new ArrayList<>();      
+        String sql = "SELECT sm.MEMBERID, sm.SQUADID, SQUADS.squadname, SQUADS.SQUADID, owners.USERNAME ownername, sm.ISINVITED, sm.ISOWNER, mynames.USERNAME membername ";
+        sql += "FROM SQUADMEMBERS sm JOIN SQUADS ON sm.squadid = Squads.squadid JOIN USERS owners ON owners.userid = squads.ownerid ";
+        sql += "JOIN USERS mynames ON mynames.userid = %d ";
+        sql += "WHERE sm.memberid = %d ORDER BY squads.squadname ASC";
+        sql = String.format(sql, userId, userId);
+        Statement stat = null;
+        ResultSet rs = null;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            while (rs.next()) {
+                String squadname = rs.getString("squadname");
+                int squadid = rs.getInt("squadid");
+                String ownerName = rs.getString("ownername");
+                boolean isInvited = rs.getBoolean("isinvited");
+                boolean isOwner = rs.getBoolean("isowner");
+                String memberName = rs.getString("membername");
+                SquadMembership sm = new SquadMembership (squadid,squadname,isOwner, isInvited, userId, memberName,ownerName);                    
+                memberships.add(sm);
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            memberships = null;
+            lastError = sqle.getMessage();
+        }
+          catch (Exception e) {
+              //something else went wrong in trying to make the invitations
+              lastError = "Error parsing database entry";
+              memberships = null;
+          }
+            finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return memberships;        
+    }    
+
+    //returns true if operation successful, false if not.
+    public boolean joinSquad (int userId, int squadId) {
+        //first verify user is invited to the squad
+        if (!isUserInvitedToSquad (userId, squadId)) {
+            lastError = "user cannot join a squad they are not invited to!";
+            return false;
+        }
+        //now "join" the squad by setting isInvited to false, thereby 'accepting' in the invitation           
+        String sql = "UPDATE squadmembers SET isinvited = ? WHERE memberid = ? AND squadid = ?";        
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);
+            pstat.setBoolean(1, false);            
+            pstat.setInt(2, userId);
+            pstat.setInt(3, squadId);
+            pstat.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        } finally {
+            if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
+            return (lastError == null);
+        }
+    }
+    
+    
+        
+    //returns true if operation successful, false if not.
+    public boolean removeUserFromSquad (int userId, int squadId) {
+        //first verify user is invited to the squad
+        if (!isUserInvitedToOrMemberOfSquad (userId, squadId)) {
+            lastError = "user already not member of nor invited to that squad";
+            return false;
+        }
+        //now remove user from the squad by deleting all records in the squad membership table
+        //belonging to this user and the squadId
+        String sql = "DELETE FROM squadmembers WHERE memberid = ? AND squadid = ?";        
+        PreparedStatement pstat = null;
+        try {
+            pstat = CONN.prepareStatement(sql);           
+            pstat.setInt(1, userId);
+            pstat.setInt(2, squadId);
+            pstat.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        } finally {
+            if (pstat != null) try {pstat.close();} catch (SQLException sqle) {}
+            return (lastError == null);
+        }
+    }        
+    
+    //Returns true if successful, false if unsucessful.  See lastError for details if unsuccessful.
+    //Assumes squadName has already been validated.  This method creates records in two tables -
+    //SQUADS (create the squad) and SQUADMEMBERS (assign an owner)
+    public boolean createSquad (int ownerId, String squadName) {
+        //Verify ownerId is a valid user
+        if (getUserById (ownerId) == null) {
+            lastError = "user does not exist, cannot create squad";
+            return false;
+        }
+        
+        //Verify squadName does not already exist
+        if (getSquadIdBySquadName (squadName) == -1) {
+            if (lastError != null) return false;
+        }
+                
+        //Create squad by first inserting a new record in the SQUAD table and then adding the owner
+        //of the new squad in the SQUADMEMBERS table
+        PreparedStatement pstatSquads = null, pstatSquadMembers = null;                           
+        ResultSet squadRs = null;
+        String sqlSquad = "INSERT INTO squads (squadname, ownerid) VALUES (?, ?)";  
+        String sqlSquadMembers = "INSERT INTO squadmembers (memberid, isowner, isinvited, squadid)";
+        sqlSquadMembers += " VALUES (?,?,?,?)";
+        int squadId = -1;
+        try {
+            pstatSquads = CONN.prepareStatement(sqlSquad, Statement.RETURN_GENERATED_KEYS);
+            pstatSquads.setString(1, squadName);
+            pstatSquads.setInt(2, ownerId);
+            pstatSquads.executeUpdate();
+            //fetch the auto-generated key (aka SquadId) because we need it for the SquadMembers table
+            squadRs = pstatSquads.getGeneratedKeys();
+            if (squadRs.next())
+                squadId = squadRs.getInt(1);
+            
+            pstatSquadMembers = CONN.prepareStatement(sqlSquadMembers);
+            pstatSquadMembers.setInt(1, ownerId);
+            pstatSquadMembers.setBoolean(2, true);
+            pstatSquadMembers.setBoolean(3, false);
+            pstatSquadMembers.setInt(4, squadId);
+            pstatSquadMembers.executeUpdate();
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();            
+        }                
+        finally {
+            if (squadRs != null)
+                try {squadRs.close(); } catch (SQLException sqle) {}
+            if (pstatSquads != null) 
+                try {pstatSquads.close();} catch (SQLException sqle) {}
+            if (pstatSquadMembers != null) 
+                try {pstatSquadMembers.close();} catch (SQLException sqle) {}                        
+            return (lastError == null);
+        }                
+    }       
+    
+    //Returns squad ID if successful lookup, -1 if no squad exists or error occurs.
+    //See lastError to determine if error occurred.
+    public int getSquadIdBySquadName (String squadName) {
+        if (squadName == null) return -1;
+        String sql = "SELECT SQUADID FROM SQUADS WHERE SQUADNAME = " +
+                                                    "'" + squadName + "'";
+        Statement stat = null;
+        ResultSet rs = null;
+        int squadId = -1;
+        try {
+            stat = CONN.createStatement();
+            rs = stat.executeQuery(sql);
+            if (rs.next()) {
+                squadId = rs.getInt("SQUADID");
+            }
+            lastError = null;
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+        } finally {
+            if (rs != null)
+                try {
+                    rs.close();
+                } catch (SQLException sqle) {}
+            if (stat != null)
+                try {
+                    stat.close();
+                } catch (SQLException sqle) {}
+        }
+        return squadId;
+    }
+    
     public List<Post> getSortedPostsByDate() {
-        return getUsersPostsByDate ("%");
+        return getUsersPostsByDate ("%", -1);
+    }
+    
+    public List <Post> getSortedPostsByDate (int squadId) {
+        return getUsersPostsByDate ("%", squadId);
     }
 
-    public List<Post> getUsersPostsByDate (String username) {
+    //Get all posts by a username and optionally by squad ID as well
+    //if squadId is negative, then posts from all squad IDs will be returned
+    public List<Post> getUsersPostsByDate (String username, int squadId) {
         List<Post> posts = new ArrayList<>();
-        String sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
-        sql += "Users.userid WHERE username LIKE '%s' ORDER BY postdate DESC";
-        sql = String.format(sql, username);
+        String sql = "";
+        if (squadId < 0) {
+            sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
+            sql += "Users.userid WHERE username LIKE '%s' ORDER BY postdate DESC";
+            sql = String.format(sql, username);
+        }
+        else {
+            sql = "SELECT * FROM Posts JOIN Users ON Posts.authorid = ";
+            sql += "Users.userid WHERE username LIKE '%s' AND Posts.squadid = %d ORDER BY postdate DESC";
+            sql = String.format(sql, username, squadId);
+        }
         Statement stat = null;
         ResultSet rs = null;
         try {
@@ -564,7 +838,7 @@ public class StepUpDAO {
     }
 
     public void updateImage(int userId, String mime, InputStream is) {
-        String sql = "UPDATE Profiles SET pictype = ?, picture = ? WHERE userid = ?";
+        String sql = "UPDATE Profiles SET pictype = ?, picture = ? WHERE userid = ?";        
         PreparedStatement pstat = null;
         try {
             pstat = CONN.prepareStatement(sql);
@@ -619,6 +893,78 @@ public class StepUpDAO {
             return null;
     }
 
+    /**
+     * Inserts a row into the Squadmembers table to add a username as invited to a 
+     * squad.  Method will check if username exists and if the user is already invited
+     * or not.  If username does not exist or user is already invited, method returns -1, otherwise
+     * returns squadid back.
+     * @param InvitedUser - object holding username and squadid     
+     * @return SquadId  if all goes well, -1 if not.
+     * there's an error.
+     */
+    public int inviteUser (InvitedUser iu) {
+        //front controller should do this, but double check to be sure
+        User invitedUser = getUserByUserName(iu.getInvitedUsername());
+        if (invitedUser == null) {
+            lastError = "Username does not exist";
+            return -1;
+        }
+        //Now check if squad ID is valid and username isn't already a member or owner
+        List<SquadMembership> members = this.getAllSquadMembers (iu.getSquadId());
+        if (members == null) {
+            lastError = "Squad does not exist or has no owner";
+            return -1;
+        }
+        //check username isn't already a member or owner        
+        for (SquadMembership m : members) {
+            if (m.getOwnerName().equals(iu.getInvitedUsername())) {
+                lastError = "Cannot invite squad owner";
+                return -1;
+            }
+            else if (m.getUserName().equals(iu.getInvitedUsername()) &&
+                    m.getIsInvited()) {
+                lastError = "Username already has an pending invitation to squad";
+                return -1;
+            }
+            else if (m.getUserName().equals(iu.getInvitedUsername()) &&
+                    !m.getIsInvited()) {
+                lastError = "Cannot invite existing members";
+                return -1;                
+            }
+        }
+        //Now that we know this user isn't the owner, isn't invited already, and isn't a full fledged member,
+        //let's do the insert to create  record for him/her!
+        String sql = "INSERT INTO Squadmembers (memberid,isowner,isinvited,squadid) ";
+        sql += "VALUES (?,?,?,?)";
+        PreparedStatement pstat = null;
+        ResultSet rs = null;
+        int tableId = -1;
+        try {
+            pstat = CONN.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
+            pstat.setInt(1,invitedUser.getUserId());
+            pstat.setBoolean(2, false);
+            pstat.setBoolean(3, true);
+            pstat.setInt(4,iu.getSquadId());
+            pstat.executeUpdate();
+            rs = pstat.getGeneratedKeys();
+            if (rs.next()) {
+                tableId = rs.getInt(1);
+                lastError = null;
+            }
+            else
+                lastError = "Unable to create invitation";
+        } catch (SQLException sqle) {
+            lastError = sqle.getMessage();
+            return -1;
+        } finally {
+            if (rs != null)
+                try { rs.close();} catch (SQLException sqle) {}
+            if (pstat != null)
+                try { pstat.close(); } catch (SQLException sqle) {}
+        }
+        return iu.getSquadId();
+    }    
+    
     /**
      * Inserts a row into the Followers table to allow a user to follow another
      * user's actions.  Method will check if a relationship already exists and

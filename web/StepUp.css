@@ -48,9 +48,9 @@ div.scrollboxBig {
 
 #profilePic{
   width: auto;
-  max-width: 150px;
+  max-width: 250px;
   height: auto;
-  max-height: 100px;
+  max-height: 250px; /*needs to match dimensions from ProfilePictureFactory*/
 }
 
 
@@ -94,6 +94,11 @@ padding-left : 8px;
     
 }
 
+span.emphasistext {
+    font-weight: bold;
+    font-style: italic;
+}
+
 #squareinput {
 border: 1px solid #7092BF;    
 font-family: "Comic Sans MS", cursive, sans-serif;
@@ -117,6 +122,12 @@ h1  { font-family: "Comic Sans MS", cursive, sans-serif;
       color: #7092BF;
       white-space: nowrap;
     }
+    
+h2  { font-family: "Comic Sans MS", cursive, sans-serif;
+      font-size: 135%;
+      color: #7092BF;
+      white-space: nowrap;
+    }    
     
 body { background-color: white;
        margin-left:3em;
